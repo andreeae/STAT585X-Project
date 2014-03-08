@@ -1,0 +1,47 @@
+
+Draft of plan for the STAT 585X project
+=======================================
+by Andreea Erciulescu
+
+
+Topic
+-----
+Auxiliary Information for Modeling Survey Data
+
+
+Questions of interest
+---------------------
+What sources of auxiliary variables are available to help explain variability in soil erosion?
+
+Do soil characteristics changes over time match the survey design and data collection?
+
+Motivation
+----------
+National Resources Inventory (NRI) is an annual survey conducted collaboratively by USDA NRCS (NAtural Resources Conservation Services) and ISU Center for Survey Statistics and Methodology (CSSM) to provide status and trend estimates for natural resources on nonfederal lands in US. Example of such estimates are soil erosion estimates in relation to land characteristics and programs.
+
+Conservation Effects Assessment Project (CEAP) is a series of surveys intended to quantify environmental effects of conservation prctices and programs by hydrologic unit codes (HUCs). The following image illustrates the division of the United States territory into 2-digits HUCs and the sudivision of the Upper Mississippi region into 4-digit HUCs.  
+
+<img src= "HUC2-4-8.jpg" height="400px" width="800px" />
+
+
+The CEAP sample is a subset of the NRI points classified as cultivated cropland. The data was collected using farmers interviews and NRCS hydrologic, climate and soil databases. The data was then filtered through an APEX model (black box) and the result is a set of observations for usable points for 19 response variables. Our goal is to produce erosion estimates for 8-digit HUCs. 
+
+In order to do modeling, we need a set of auxiliary variables, hopefully, presenting good correlations with the response variables we have from the APEX model. The first source of auxiliary variables was the NRI Pointgen data on land use and variables related to erosion (such as USLE erosion). The second source of auxiliary variables was the Soil Survey and we obtained information for the following soil characteristics: Rfactor, Kfactor, Wfactor, Hydrologic Group and Slope. In our analysis, slope seemed to have some extreme values and there were significant differences between the sample distribution and the population distribution. Hence, the motivation for searching for other soil characteristics to serve as covariates in the models. 
+
+
+Data
+----
+
+In this project we will consider the CEAP sample for Des Moines River Watershed (HUC 0710) as the region of interest. Notice that this region is subdivided into 9 areas, 8-digit HUCs.
+
+<img src= "BooneRaccoon.jpg" height="300px" width="500px"/>
+
+The Public Land Survey System (PLSS) and the Crop Data Layer (CDL) are consider as new sources of soil information. The PLSS data can be found on [PLSS]([http://http://www.geocommunicator.gov/GeoComm/lsis_home/home/index.htm]) in the form of shapefiles. Information is available at both state and county levels.  
+
+Data Collection and Processing Steps
+------------------------------------
+
+The plan is to 
+
+
+
