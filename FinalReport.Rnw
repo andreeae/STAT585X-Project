@@ -19,9 +19,16 @@
   # set global chunk options
   opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
 options(replace.assign=TRUE,width=90)
+
+library(ggplot2)
+library(maps)
+library(ggmap)
+library(plyr)
+library('raster')
+library(maptools)
 @
 
-\title{STAT 585X - Final Project - Report \\ Changes in cultivated cropland soil in Iowa }
+\title{STAT 585X - Final Project - Report \\ Yey to web scrapping, big data at no storage cost \\ Changes in cultivated cropland soil in Iowa }
 
 \author{Andreea Erciulescu}
 \maketitle
@@ -30,7 +37,6 @@ options(replace.assign=TRUE,width=90)
 \section{Introduction}
 
 \subsection{Question of interest}
-
 
 Do soil characteristics changes over time match the Conservation Effects Assessement Project (CEAP) survey design and data collection?
 
@@ -94,7 +100,7 @@ An useful R package to read and manipulate these data is the \textit{Raster} pac
 
 <<cdl,cache=FALSE, message=FALSE,warning=FALSE>>=
 setwd("U:/classes/585X")
-library('raster')
+#library('raster')
 
 #?raster   ####S4 methd 
 
@@ -122,9 +128,9 @@ After mapping the region, we realize that it covers the enotre basin, more than 
 <<GIS,eval = FALSE, message=FALSE,warning=FALSE>>=
 setwd("U:/classes/585X")
 
-library(ggplot2)
-library(maps)
-library(plyr)
+#library(ggplot2)
+#library(maps)
+#library(plyr)
 
 xx <-  readShapeSpatial("data/igsb/basin.shp")
 xxx <- thinnedSpatialPoly(as(xx,"SpatialPolygons"),
@@ -180,14 +186,14 @@ The information in these data is based on historical records and it is only coun
 
 <<Atlas,eval = FALSE, message=FALSE,warning=FALSE>>=
 setwd("U:/classes/585X")
-library(ggplot2)
-library(maps)
-library(plyr)
+#library(ggplot2)
+#library(maps)
+#library(plyr)
 states <- map_data("state")
 head(states)
 
 
-library(maptools)
+#library(maptools)
 xx <- readShapeSpatial("data/IA_AtlasHCB/IA_Historical_Counties/IA_Historical_Counties.shp")
 xxx <- thinnedSpatialPoly(as(xx,"SpatialPolygons"),
                           tolerance = 0.1, minarea = 0.001, topologyPreserve = T)
@@ -201,7 +207,7 @@ length(polys@Polygons)
 
 
 
-library(maptools)
+#library(maptools)
 xx <- readShapeSpatial("data/cdl/IAcdl.shp")
 xxx <- thinnedSpatialPoly(as(xx,"SpatialPolygons"),
                           tolerance = 0.1, minarea = 0.001, topologyPreserve = T)
@@ -312,15 +318,15 @@ On the other hand, PLSS data have large dimensions and storage space has been a 
 
 \subsection{Census data}
 
-We pull both the Iowa data and the Des Moines River data from the web using the XML library in R. We will have to pull the coordinates for all the points and do some data processing to get the information in desired format, such as a dataframe containing the numeric values for the points coordinates. The data for the Des Moines River will have to be pulled from the full dataframe on the hydrologic levels in Iowa. Again, we would like to have a final product in the form of a dataframe, with numeric values for the point coordinates.\\
+We pull both the Iowa data and the Des Moines River data from the web using the XML library in R. The Iowa data is used to extract the point coordinates and construct a map. First, we pull the point coordinates for the available points and save them ion a dataframe containing the numeric values. We use the ggplot2 library in R to construct a plot of the data and the maps and ggmap libraries to construct a map fo the data. These visualisations serve as both a nice representation of the data and as a verification that we are working with the desired region.\\ 
 
+The data for the Des Moines River is extracted from the full dataframe on the hydrologic levels in Iowa. Again, we construct a dataframe with numeric values for the point coordinates and we overlap this data on the previous map. \\
 
-The plyr package in R with come handy at creating the region of interest around the Des Moiner River. This is necessary because the census data on the river contains only a few points, but CEAP was run at more points in the entire watershed. We will have to replicate a region to give us the necessary information, representative for the Des Moines River watershed.
+The next step is to mimic the CEAP sample. The data on the Des Moines River contains points only on the river flow, but not on the entire watershed. We are using the plyr package in R to expand this sample of points, in order to capture the region along the river. We add noise to each of the existing points, using the jitter function. Also, we create six more points in the near neighborhood of the existing points. A map of the final region is presented below.
 
-
-<<census,cache=TRUE>>=
+<<census,cache=TRUE, warning=FALSE, message=FALSE>>=
 setwd("U:/classes/585X")
-library(XML)
+#library(XML)
 
 ###pull the iowa census data from the web
 src ="http://tigerweb.geo.census.gov/tigerwebmain/Files/tigerweb_acs13_tract_ia.html"
@@ -341,12 +347,11 @@ poly.coords.ia[,1] <- as.numeric(as.vector(poly.coords.ia[,1]))
 poly.coords.ia[,2] <- as.numeric(as.vector(poly.coords.ia[,2]))
 
 ##plot the area
-library(ggplot2)
+#library(ggplot2)
 qplot(y,x,data=poly.coords.ia)
 
-
-library(maps)
-library(ggmap)
+#library(maps)
+#library(ggmap)
 
 qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
   geom_point(data=poly.coords.ia , 
@@ -395,8 +400,8 @@ qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
 
 
 ## create a region of interest around the des moines river
-library('plyr')
-
+#library('plyr')
+set.seed(2013)
 add.poly.coords <- as.data.frame(t(ldply(llply(poly.coords,function(x) ldply(x,function(y) jitter(rep(y,7),0.075))),unlist)[,-1]))
 names(add.poly.coords) <- c("x","y")
 
@@ -409,29 +414,72 @@ loc.newcoords <- project(cbind(add.poly.coords[,2],add.poly.coords[,1]), proj = 
 
 \section{Results}
 
-We will have to extract the pixel count information available in the CDL data for the points with coordinates in the Census data. By doing this matching, we will construct summaries for all the categories (corn, soybean, etc) for the points in the region of interest. We will do this for the years 2003-2007 and we will report the tables for each year. The final comments would be on the changes in crop categories over this time period and the effect on the future analysis done with the CEAP data. 
+We extract the pixel count information available in the CDL data for the points in the desired region, for each year of interest. We present summaries for all the crop categories (corn, soybean, etc), by year in the following tables. 
 
 <<results>>=
 
 # ?cellFromXY
 # cellFromXY
 
-cdl.pts <- cdl.ia03[cellFromXY(cdl.ia03, loc.newcoords)]
-table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
+cdl.pts3 <- cdl.ia03[cellFromXY(cdl.ia03, loc.newcoords)]
+#table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
 
 
-cdl.pts <- cdl.ia04[cellFromXY(cdl.ia04, loc.newcoords)]
-table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
+cdl.pts4 <- cdl.ia04[cellFromXY(cdl.ia04, loc.newcoords)]
+#table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
 
-cdl.pts <- cdl.ia05[cellFromXY(cdl.ia05, loc.newcoords)]
-table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
-
-
-cdl.pts <- cdl.ia06[cellFromXY(cdl.ia06, loc.newcoords)]
-table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
+cdl.pts5 <- cdl.ia05[cellFromXY(cdl.ia05, loc.newcoords)]
+#table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
 
 
-cdl.pts <- cdl.ia07[cellFromXY(cdl.ia07, loc.newcoords)]
-table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
+cdl.pts6 <- cdl.ia06[cellFromXY(cdl.ia06, loc.newcoords)]
+#table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
+
+
+cdl.pts7 <- cdl.ia07[cellFromXY(cdl.ia07, loc.newcoords)]
+#table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
+
+src ="http://www.nass.usda.gov/research/Cropland/docs/CDL_2013_crosswalk.htm"
+tables <- readHTMLTable(src)
+codes <- tables[[1]]
+#dim(codes)
+#code [7:20,]
+codes <- as.data.frame(codes[-c(1:9,266:316),1:2])
+names(codes) <-  c("code","class")
+#head(codes)
+
+## the problem here is to merge two data frames of different sizes, by one column
+## the column in one data frame to merge by is a subset of the corresponding column in the second data frame
+## I read on join function and on its attributes, seems that
+## join(codes, pts, type="right") does it but the second column of characters is converted in NAs...why?
+
+pts <- as.data.frame(cdl.pts3[-which(is.na(cdl.pts3))])
+names(pts) <- "code"
+join(codes, pts, by="code") -> res
+res[match(pts[,"code"],res[,"code"]),] -> res2
+table(res2[,"class"])/ nrow(pts) *100
+
+
+results <- function(x){
+pts <- as.data.frame(x[-which(is.na(x))])
+names(pts) <- "code"
+join(codes, pts, by="code") -> res
+res[match(pts[,"code"],res[,"code"]),] -> res2
+return (table(res2[,"class"])/ nrow(pts) *100)
+}
+
+## the next problem would be to combine all the years cdl.pts into one data frame
+
+pts37 <- cbind(cdl.pts3, cdl.pts4, cdl.pts5,cdl.pts6, cdl.pts7)
+
+res <- apply(pts37,2,results)   ###or alply
+
+##ideally we would like adply so that the result is a dataframe; however the number of categories differs by year, hence the columns in the resulting data frame are not of same length
 @
+
+%\Sexpr{res[[1]][1]},\Sexpr{res[[1]][2]},\Sexpr{res[[1]][3]}
+
+\section{Conclusions/ Future work}
+The final comments would be on the changes in crop categories over this time period and the effect on the future analysis done with the CEAP data. 
+
 \end{document}
