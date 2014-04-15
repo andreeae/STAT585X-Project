@@ -486,17 +486,17 @@ laply(d,length)
 allcrops <- unlist(llply(d, function(x) names(x)))
 cropmaxno <- length(unique(allcrops))
 
-laply(d,function(x) names(x) <- unique(allcrops))  ## doent do it automatically
+#aply(d,function(x) names(x) <- unique(allcrops))  ## doent do it automatically
 
 
 ###this function should work!!!!!!!!
-llply(d, function(x) {
-    for (i in 1:cropmaxno)
-    if (length(grep(unique(allcrops)[i],names(x)))<1) {
-      x <- c(x, NA)
-      names(x)[i] <- unique(allcrops)[i]
-    }       
-})
+#llply(d, function(x) {
+#for (i in 1:cropmaxno)
+#if (length(grep(unique(allcrops)[i],names(x)))<1) {
+#      x <- c(x, NA)
+#      names(x)[i] <- unique(allcrops)[i]
+#    }       
+#})
 ## the problem is that we cannot assign the changes to each element
 
 ##this should do it
@@ -512,43 +512,66 @@ fxn <- function(data) {
 return(data)
 }
 
-fxn(d) -> newd
+#fxn(d) -> newd
 
 ##it works, except for the last year, where the categories are developed, developed open space, developed etc...
 ##the grep function fails because developed is subset ...need to match exactly...
 
+##this doesn work either
+fxn <- function(data) {
+  for (x in 1:length(data)) {
+    for (i in 1:cropmaxno)
+      if ((length(grep(unique(allcrops)[i],names(data[[x]])))<1)||(length(grep(names(data[[x]]),unique(allcrops)[i]))<1) ) {
+       data[[x]] <- c(data[[x]], NA)
+       names(data[[x]])[i] <- unique(allcrops)[i]
+      }  
+    paste("change number",data)
+  }
+return(data)
+}
+#fxn(d) -> newd
+
+##Chritmas treeeeeeeeeeeees
+
+fxn <- function(data) {
+
+  #  browser()
+  for (x in 1:length(data)) {
+    for (i in 1:cropmaxno){
+      
+      cnt <- 0
+      subset = grep(unique(allcrops)[i],names(data[[x]]))
+      len = length(subset)
+      
+      if (len<1){
+       data[[x]] <- c(data[[x]], NA)
+       names(data[[x]])[length(data[[x]])] <- unique(allcrops)[i]
+      }  
+        
+      if (len>=1)  
+        for (j in 1: len)
+          if(!identical(unique(allcrops)[i],names(data[[x]])[[subset[j]]]))
+              cnt <- cnt+1
+
+      if (cnt>=1){
+        data[[x]] <- c(data[[x]], NA)
+        names(data[[x]])[length(data[[x]])] <- unique(allcrops)[i]
+      }    
+    }
+    
+  }
+return(data)
+}
+
+fxn(d) -> newd
+
+#debug(fxn(d))
 
 
-for (i in 1:cropmaxno)
-    if (length(grep(unique(allcrops)[i],names(d[[1]])))<1) {
-      d[[1]] <- c(d[[1]], NA)
-      names(d[[1]])[i] <- unique(allcrops)[i]
-    } 
+laply(newd,length)  ###works!!!!!
 
-for (i in 1:cropmaxno)
-    if (length(grep(unique(allcrops)[i],names(d[[2]])))<1) {
-      d[[2]] <- c(d[[2]], NA)
-      names(d[[2]])[i] <- unique(allcrops)[i]
-    } 
+d <- as.data.frame(newd)
 
-for (i in 1:cropmaxno)
-    if (length(grep(unique(allcrops)[i],names(d[[3]])))<1) {
-      d[[3]] <- c(d[[3]], NA)
-      names(d[[3]])[i] <- unique(allcrops)[i]
-    } 
-
-for (i in 1:cropmaxno)
-    if (length(grep(unique(allcrops)[i],names(d[[4]])))<1) {
-      d[[4]] <- c(d[[4]], NA)
-      names(d[[4]])[i] <- unique(allcrops)[i]
-    } 
-for (i in 1:cropmaxno)
-    if (length(grep(unique(allcrops)[i],names(d[[5]])))<1) {
-      d[[5]] <- c(d[[5]], NA)
-      names(d[[5]])[i] <- unique(allcrops)[i]
-    } 
-
-cbind(as.data.frame(d[[1]]),as.data.frame(d[[2]]),,as.data.frame(d[[3]]),as.data.frame(d[[4]]),as.data.frame(d[[5]]))
 
 ##ideally we would like adply so that the result is a dataframe; however the number of categories differs by year, hence the columns in the resulting data frame are not of same length
 @
@@ -556,20 +579,34 @@ cbind(as.data.frame(d[[1]]),as.data.frame(d[[2]]),,as.data.frame(d[[3]]),as.data
 
 \begin{table}[h!]
 \begin{center}
-\begin{tabular}{llllll}
+\begin{tabular}{lccccc}
 \hline
 Crop Code & 2003 & 2004 & 2005 & 2006 & 2007 \\ 
 \hline
-min &  \Sexpr{d[1,1]} & \Sexpr{d[1,2]}& \Sexpr{d[1,3]}&\Sexpr{d[1,4]} & \Sexpr{d[1,5]}& \Sexpr{d[1,6]}& \Sexpr{d[1,7]}\\ 
-1stq &  \Sexpr{d[2,1]}  & \Sexpr{d[2,2]} & \Sexpr{d[2,3]} & \Sexpr{d[2,4]} & \Sexpr{d[2,5]} & \Sexpr{d[2,6]} & \Sexpr{d[2,7]}\\ 
-median & \Sexpr{d[3,1]}  & \Sexpr{d[3,2]} & \Sexpr{d[3,3]} & \Sexpr{d[3,4]}& \Sexpr{d[3,5]} & \Sexpr{d[3,6]} & \Sexpr{d[3,7]}\\ 
-mean   & \Sexpr{d[4,1]}  & \Sexpr{d[4,2]} & \Sexpr{d[4,3]} & \Sexpr{d[4,4]} & \Sexpr{d[4,5]} & \Sexpr{d[4,6]}& \Sexpr{d[4,7]}\\ 
-3rdq  &  \Sexpr{d[5,1]}  & \Sexpr{d[5,2]} & \Sexpr{d[5,3]} & \Sexpr{d[5,4]} & \Sexpr{d[5,5]} & \Sexpr{d[5,6]}& \Sexpr{d[5,7]}\\ 
-max   &   \Sexpr{d[6,1]}  & \Sexpr{d[6,2]} & \Sexpr{d[6,3]} & \Sexpr{d[6,4]}& \Sexpr{d[6,5]} & \Sexpr{d[6,6]}& \Sexpr{d[6,7]}\\ 
-\hline
-\hline
-sd &  \Sexpr{d[7,1]} $ & \Sexpr{d[7,2]} & \Sexpr{d[7,3]} & \Sexpr{d[7,4]} & \Sexpr{d[7,5]} & \Sexpr{d[7,6]}& \Sexpr{d[7,7]}\\ 
-se &  \Sexpr{d[8,1]} $ & \Sexpr{d[8,2]} & \Sexpr{d[8,3]} & \Sexpr{d[8,4]} & \Sexpr{d[8,5]} & \Sexpr{d[8,6]}& \Sexpr{d[8,7]}\\ 
+Alfalfa &  \Sexpr{d[1,1]} & \Sexpr{d[1,2]}& \Sexpr{d[1,3]}&\Sexpr{d[1,4]} & \Sexpr{d[1,5]}\\ 
+Corn &  \Sexpr{d[2,1]}  & \Sexpr{d[2,2]} & \Sexpr{d[2,3]} & \Sexpr{d[2,4]} & \Sexpr{d[2,5]}\\ 
+Developed & \Sexpr{d[3,1]}  & \Sexpr{d[3,2]} & \Sexpr{d[3,3]} & \Sexpr{d[3,4]}& \Sexpr{d[3,5]} \\ 
+Fallow/Idle Cropland   & \Sexpr{d[4,1]}  & \Sexpr{d[4,2]} & \Sexpr{d[4,3]} & \Sexpr{d[4,4]} & \Sexpr{d[4,5]}\\ 
+Forest  &  \Sexpr{d[5,1]}  & \Sexpr{d[5,2]} & \Sexpr{d[5,3]} & \Sexpr{d[5,4]} & \Sexpr{d[5,5]}\\ 
+Grass/Pasture   &   \Sexpr{d[6,1]}  & \Sexpr{d[6,2]} & \Sexpr{d[6,3]} & \Sexpr{d[6,4]}& \Sexpr{d[6,5]} \\ 
+Oats &  \Sexpr{d[7,1]}  & \Sexpr{d[7,2]} & \Sexpr{d[7,3]} & \Sexpr{d[7,4]} & \Sexpr{d[7,5]} \\ 
+Other Small  Grains &  \Sexpr{d[8,1]}  & \Sexpr{d[8,2]} & \Sexpr{d[8,3]} & \Sexpr{d[8,4]} & \Sexpr{d[8,5]} \\ 
+
+Soybeans &  \Sexpr{d[9,1]} & \Sexpr{d[9,2]}& \Sexpr{d[9,3]}&\Sexpr{d[9,4]} & \Sexpr{d[9,5]}\\ 
+water &  \Sexpr{d[10,1]}  & \Sexpr{d[10,2]} & \Sexpr{d[10,3]} & \Sexpr{d[10,4]} & \Sexpr{d[10,5]}\\ 
+Christmas Trees & \Sexpr{d[11,1]}  & \Sexpr{d[11,2]} & \Sexpr{d[11,3]} & \Sexpr{d[11,4]}& \Sexpr{d[11,5]} \\ 
+Clouds/No Data  & \Sexpr{d[12,1]}  & \Sexpr{d[12,2]} & \Sexpr{d[12,3]} & \Sexpr{d[12,4]} & \Sexpr{d[12,5]}\\ 
+Nonag/Undefined  &  \Sexpr{d[13,1]}  & \Sexpr{d[13,2]} & \Sexpr{d[13,3]} & \Sexpr{d[13,4]} & \Sexpr{d[13,5]}\\ 
+Other Crops  &   \Sexpr{d[14,1]}  & \Sexpr{d[14,2]} & \Sexpr{d[14,3]} & \Sexpr{d[14,4]}& \Sexpr{d[14,5]} \\ 
+Deciduous Forest &  \Sexpr{d[15,1]}  & \Sexpr{d[15,2]} & \Sexpr{d[15,3]} & \Sexpr{d[15,4]} & \Sexpr{d[15,5]} \\ 
+Developed/Low  Intensity &  \Sexpr{d[16,1]}  & \Sexpr{d[16,2]} & \Sexpr{d[16,3]} & \Sexpr{d[16,4]} & \Sexpr{d[16,5]} \\ 
+
+Developed/Open Space  &  \Sexpr{d[17,1]}  & \Sexpr{d[17,2]} & \Sexpr{d[17,3]} & \Sexpr{d[17,4]} & \Sexpr{d[17,5]}\\ 
+Herbaceous  Wetlands  &   \Sexpr{d[18,1]}  & \Sexpr{d[18,2]} & \Sexpr{d[18,3]} & \Sexpr{d[18,4]}& \Sexpr{d[18,5]} \\ 
+Mixed Forest &  \Sexpr{d[19,1]}  & \Sexpr{d[19,2]} & \Sexpr{d[19,3]} & \Sexpr{d[19,4]} & \Sexpr{d[19,5]} \\ 
+Open Water &  \Sexpr{d[20,1]}  & \Sexpr{d[20,2]} & \Sexpr{d[20,3]} & \Sexpr{d[20,4]} & \Sexpr{d[20,5]} \\ 
+Woody Wetlands &  \Sexpr{d[21,1]}  & \Sexpr{d[21,2]} & \Sexpr{d[21,3]} & \Sexpr{d[21,4]} & \Sexpr{d[21,5]} \\ 
+
 \hline
 \end{tabular}
 \caption{Estimates for the area effects variance component, $\sigma_b^2$} 
