@@ -15,10 +15,13 @@
 \usepackage{breakurl}
 \begin{document}
 
-<<setup, include=FALSE, cache=FALSE>>=
+<<setup, include=FALSE, cache=FALSE, tidy=FALSE>>=
   # set global chunk options
   opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
 options(replace.assign=TRUE,width=90)
+
+#install.packages("ggplot2")
+#install.packages("raster")
 
 library(ggplot2)
 library(maps)
@@ -29,7 +32,7 @@ library(maptools)
 library('XML')
 @
 
-\title{STAT 585X - Final Project - Report \\ Yey to web scrapping, big data at no storage cost \\ Changes in cultivated cropland soil in Iowa }
+\title{STAT 585X - Final Project - Report \\ Changes in cultivated cropland land in Iowa}
 
 \author{Andreea Erciulescu}
 \maketitle
@@ -39,7 +42,7 @@ library('XML')
 
 \subsection{Question of interest}
 
-Do soil characteristics changes over time match the Conservation Effects Assessement Project (CEAP) survey design and data collection?
+Do land characteristics changes over time match the Conservation Effects Assessement Project (CEAP) survey design and data collection?
 
 \subsection{Motivation}
 
@@ -53,25 +56,22 @@ Conservation Effects Assessment Project (CEAP) is a series of surveys intended t
 
 The CEAP sample is a subset of the NRI points classified as cultivated cropland. The data was collected using farmers interviews and NRCS hydrologic, climate and soil databases. The data was then filtered through an APEX model (black box) and the result is a set of observations for usable points for 19 response variables. The final goal is to produce erosion estimates for 8-digit HUCs. \\
 
-CEAP is run at both national and regional levels. Among the regional levels, the Des Moines River Watershed (HUC 0710) is a region of interest in this project, that is subdivided into 9 8-digit HUCs.\\
+CEAP is run at both national and regional levels. The Des Moines River Watershed (HUC 0710) is the region of interest in this project, that is subdivided into nine 8-digit HUCs.\\
 
-For analysis, data from the Soil Survey is considered, collected over the 2003 to 2006 time period. Hence, the survey frame, consisting of NRI cultivated cropland points, is set in 2003. The information for these eligible points is collected in the following years, 2004-2007.
-
+For CSSM analysis, data from the Soil Survey is considered, collected over the 2003 to 2006 time period. Hence, the survey frame, consisting of NRI cultivated cropland points, is set in 2003. The information for these eligible points is collected in the following years, 2004-2007.
 
 \subsection{Data}
 
-The CEAP sample data for the Des Moines River Watershed (HUC 0710) region is not publicly available, so in the class project I consider the following sources of information:
+The CEAP sample data for the Des Moines River Watershed (HUC 0710) region is not publicly available. Web navigation brings us to different sources of data on the United States counties and regions. In this project, we consider the following sources of information:
 
 \begin{itemize}
 
 \item Crop Data Layer (CDL)\\
 
-
-The CDL data is available at \href {CDL} {http://nassgeodata.gmu.edu/CropScape/} in the form of Tagged Image File (.tif) Format. We are interested in the state of Iowa data, available for the years of 2003-2007. The information consists of pixel counts and acreage values for different category of cropland data. Each of the category has an associated value (code), for example 1 stands for Corn and 5 stands for Soybean. A complete list of category codes, class names and colors for the USDA NASS CDL is available at \href{Codes}{http://www.nass.usda.gov/research/Cropland/docs/CDL_2013_crosswalk.htm}.
+The CDL data is available at \href {CDL}{http://nassgeodata.gmu.edu/CropScape/} in the form of Tagged Image File (.tif) Format. We are interested in the state of Iowa data, available for the years of 2003-2007. The information consists of pixel counts and acreage values for different categories of cropland data. Each of the category has an associated value (code), for example 1 stands for Corn and 5 stands for Soybean. A complete list of category codes and class names for the USDA NASS CDL is available at \href{Codes}{http://www.nass.usda.gov/research/Cropland/docs/CDL_2013_crosswalk.htm}.
 
 
 \item Census Topologically Integrated Geographic Encoding and Referencing database (Tigerweb) \\
-
 
 The Census Tigerweb data is available at \href{Census}{http://tigerweb.geo.census.gov/tigerwebmain} for both national and regional leveles. Also, data for the hydrologic levels is available at 
 
@@ -80,30 +80,41 @@ The Census Tigerweb data is available at \href{Census}{http://tigerweb.geo.censu
 
 \item Public Land Survey System (PLSS)\\
 
-The PLSS data can be found on \href{PLSS}{http://http://www.geocommunicator.gov/GeoComm/lsis_home/home/index.htm} in the form of shapefiles. Information is available at both state and county levels.  
+The PLSS data can be found on \href{PLSS}{http://http://www.geocommunicator.gov/GeoComm/lsis_home/home/index.htm} in the form of shapefiles. Information is available at both state and county levels. 
+
 \item   GIS data on hydrologic basins\\
 
 The GIS data can be found at \href{GIS}{ftp://ftp.igsb.uiowa.edu/gis_library/basins/} in the form of shapefiles. Information is available for the entire Des Moines River basin.
 
 \item   Atlas of historical countyu boundaries (AtlasHCB)\\
 
-The AtlasHCB data is available at \href{AtlasHCB}{http://publications.newberry.org/ahcbp/pages/Iowa.html} in the form of shapefiles. Information os available for the entire state of Iowa.
+The AtlasHCB data is available at \href{AtlasHCB}{http://publications.newberry.org/ahcbp/pages/Iowa.html} in the form of shapefiles. Information is available for the entire state of Iowa.
 
 \section{Data Collection and Processing Steps}
 
-We are going to explore all these different data sources and decide on the most useful one. We are interested in a very specific region in the state of Iowa so we would have to be careful at utilizing the data. Also, the files have very large dimensions, so we would have to be careful at selecting the amount of useful information.
+We explored all these different data sources using different R tools. These data differ in format, in dimension and , most importantly, in the enclosed information. We are interested in a very specific region in the state of Iowa so it is very important to select the sources that provide us with most useful information. \\
+
+Except for the CENSUS Tigerweb data and the CDL codes and classification data, all other files need to be downloaded and stored in the working folder. If you are not able to download it from the web (steps are presented below), please contact us and we will provide you the data. 
 
 \subsection{CDL data}
 
-We first download the data for years 2003-2007 from the website \href {CDL} {http://nassgeodata.gmu.edu/CropScape/}. We have five .tif files, one for each year of interest. These are raster graphics images, spatial data structures that divide the US teritory into pixels that store crop information. This type of data are referred to as a 'grid,' contrasted with 'vector' data is used to represent points, lines, polygons. The dimensions of files are very large \footnote{After saving the data to my U drive I received an e-mail from the university alerting me that I have filled $99\%$ of my Cyfiles. Hence, I opened a Cybox account and started to move other folders over.}.\\
+We first download the data for years 2003-2007 from the website, following these steps:
 
-An useful R package to read and manipulate these data is the \textit{Raster} package. This package allows us to read the raster values from the files and to convert the cell numbers to coordinates and back. \\
+\begin{enumerate}
+\item Open this link in an internet browser: \href {CDL} {http://nassgeodata.gmu.edu/CropScape/}. We now have the United States map and some tabs on the left and at the top of the map;
+\item Click on the \textit{US map -like} tab at the top, hoovering over it says \textit{Define Area of Interest by Region/State/ASD/County}, select \textit{State} as the \textit{Level} and \textit{Iowa} as the \textit{state}. Click \textit{Submit};
+\item Select the years of interest (in this case 2003-2007), one by one and download the data. These file are large, so downloading them takes long time. 
+\end{enumerate}
+
+At the end of the downloading process, we have five .tif files, one for each year of interest. These are raster graphics images, spatial data structures that divide the US teritory into pixels that store crop information. This type of data is referred to as a 'grid,' contrasted with 'vector' data that is used to represent points, lines, polygons. The dimensions of the files are large, about 200,000 KB each for the 2003-2005 data and about 60,000 KB each for the 2006-2007 data.\\
+
+\textit{Note:} The first and greatest challenge in this section was storing the CDL data. We run our of memory on the working drive (U drive) and had to consider document reallocation on web storage clouds. \\
+
+An useful R package to read and manipulate the CDL data is the \textit{Raster} package, implemented using S4 methods. This package allows us to read the raster values from the files and to convert the cell numbers to coordinates and back. \\
 
 <<cdl,cache=FALSE, message=FALSE,warning=FALSE>>=
+#first step is to set the working directory to the folder where the data is saved
 setwd("U:/classes/585X")
-#library('raster')
-
-#?raster   ####S4 methd 
 
 ##read the data
 cdl.ia03 <- raster("data/cdl/CDL_2003_19.tif")
@@ -116,22 +127,23 @@ cdl.ia03
 @
 
 
-Notice the attributes of the raster objects. One of the most important ones for us is the coordinate reference system (CRS), or the map projection. We would need this in order to carefully manipulate the future data on the region of interest to get the matching coordinate reference (more details follow). The pjcets we have so far are 'skeletons,' because they only contain attributes of the data, not the actual values stored. We are going to read the values for the region of interest using cell numbers and coordinates (xy) in the extraction method from the \textit{cellFromXY}. For this, we need the coordinates for the Des Moines River Watershed and surrounding area. 
+Notice the attributes of the raster objects. One of the most important ones for us is the coordinate reference system (CRS), or the map projection. We would need this in order to carefully manipulate the future data on the region of interest to get the matching coordinate reference (more details follow). The objects we have so far are 'skeletons,' because they only contain attributes of the data, not the actual values stored. We are going to read the values for the region of interest using cell numbers and coordinates (xy) in the extraction method from the \textit{cellFromXY} function. For this, we need the coordinates for the Des Moines River Watershed and surrounding area. 
 
 \subsection{ GIS, PLSS, AtlasHCB data }
 
-These are the sources of data we do not use in the final results. The dimensions are very small, in comparison to the CDL data, which makes it easier for us to dowload and store. However, the information in the data is not realible and turns out to not be useful for our purposes. In the following we describe each of the sources more in depth.\\
+GIS, PLSS, AtlasHCB data sources are considered at first. However, we do not use any in the final results. The dimensions are smaller than the dimensions of the CDL data, so downloading and storing is not as demanding anymore. However, the information in the data is not realible and, as it turns out, not useful for our purposes.\\
 
-We first download the GIS data, very small dimensions in comparison to the raster data. We read in the data and we extract the polygons information from the shapefiles using the \textit{maptools} library in R and the function developed in one of the labs, to extract the county based information.\\
-After mapping the region, we realize that it covers the enotre basin, more than what we are interested in. Also, the polygon data is in the universal transverse mercador (UTM) and we need to convert it to the longitude-latitude, then to the CRS with the appropriate raster characteristics. 
-\textit{GIS}\\
+We first download the data, small dimensions in comparison to the raster data. We read in the data and we extract the polygons information from the shapefiles using the \textit{maptools} library in R and the function developed in one of the STAT 585X labs, to extract the county based information.\\
+
+For the GIS data, after mapping the region, we realized that it covers the entire basin, more than what we are interested in. Also, the polygon data is in the universal transverse mercador (UTM) and we need to convert it to the longitude-latitude, then to the CRS with the appropriate raster characteristics. \\
+
+The information in the AtlasHCB data is based on historical records and it is only county based. Hence it is not useful for our purposes because the time period (2003-2007) and the specific region (Des Moines River Watershed) are not included in the specifics of AtlasHCB data.\\
+
+On the other hand, PLSS data have large dimensions and storage space has been a challenge in this project. The processing steps are similar to the ones described above, in this section, because we are once again dealing with shapefiles. Also, the data is available at both state and county levels, but not at hydrologic levels. Hence, we decide to search for another source of data. Census data turns out to be very useful for us, and we decribe it in the next section.
+
 
 <<GIS,eval = FALSE, message=FALSE,warning=FALSE>>=
 setwd("U:/classes/585X")
-
-#library(ggplot2)
-#library(maps)
-#library(plyr)
 
 xx <-  readShapeSpatial("data/igsb/basin.shp")
 xxx <- thinnedSpatialPoly(as(xx,"SpatialPolygons"),
@@ -175,26 +187,13 @@ table(cdl.pts)  ##gives NAs
 
 apply(poly.coords,2,min)
 apply(poly.coords,2,max)
-@
 
+####Atlas
 
-
-\textit{AtlasHCB}\\
-
-Next, we download the AtlasHCB data. Again, the dimensions are very small in comparison to the raster data. We read in the data and we extract the polygons information from the shapefiles using the \textit{maptools} library in R. \\
-
-The information in these data is based on historical records and it is only county based. Hence it is not useful for our purposes because the time period (2003-2007) and the specific region (Des Moines River Watershed) are not included in the specifics of AtlasHCB data.
-
-<<Atlas,eval = FALSE, message=FALSE,warning=FALSE>>=
-setwd("U:/classes/585X")
-#library(ggplot2)
-#library(maps)
-#library(plyr)
 states <- map_data("state")
 head(states)
 
 
-#library(maptools)
 xx <- readShapeSpatial("data/IA_AtlasHCB/IA_Historical_Counties/IA_Historical_Counties.shp")
 xxx <- thinnedSpatialPoly(as(xx,"SpatialPolygons"),
                           tolerance = 0.1, minarea = 0.001, topologyPreserve = T)
@@ -205,10 +204,6 @@ polys <-xxx@polygons
 
 length(polys@Polygons)
 
-
-
-
-#library(maptools)
 xx <- readShapeSpatial("data/cdl/IAcdl.shp")
 xxx <- thinnedSpatialPoly(as(xx,"SpatialPolygons"),
                           tolerance = 0.1, minarea = 0.001, topologyPreserve = T)
@@ -312,28 +307,17 @@ table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
 @
 
 
-
-\textit{PLSS}\\
-
-On the other hand, PLSS data have large dimensions and storage space has been a challenge in this project. The processing steps are similar to the ones described above, in this section, because we are once again dealing with shapefiles. Also, the data is available at both state and county levels, but not at hydrologic levels. Hence, we decide to search for another source of data. Census data seems to be very useful for us, and we decribe it in the next section.
-
 \subsection{Census data}
 
-We pull both the Iowa data and the Des Moines River data from the web using the XML library in R. The Iowa data is used to extract the point coordinates and construct a map. First, we pull the point coordinates for the available points and save them ion a dataframe containing the numeric values. We use the ggplot2 library in R to construct a plot of the data and the maps and ggmap libraries to construct a map fo the data. These visualisations serve as both a nice representation of the data and as a verification that we are working with the desired region.\\ 
-
-The data for the Des Moines River is extracted from the full dataframe on the hydrologic levels in Iowa. Again, we construct a dataframe with numeric values for the point coordinates and we overlap this data on the previous map. \\
-
-The next step is to mimic the CEAP sample. The data on the Des Moines River contains points only on the river flow, but not on the entire watershed. We are using the plyr package in R to expand this sample of points, in order to capture the region along the river. We add noise to each of the existing points, using the jitter function. Also, we create six more points in the near neighborhood of the existing points. A map of the final region is presented below.
+We pull both the Iowa data and the Des Moines River data from the web using the \textit{XML} library in R. The Iowa data is used to extract the point coordinates and construct a map. First, we pull the point coordinates for the available points and save them in a dataframe containing the numeric values. We use the \textit{ggplot2} library in R to construct a plot of the data and the \textit{maps} and \textit{ggmap} libraries to construct a map of the data. These visualisations serve as both a nice representation of the data and as a verification that we are working with the desired region. We constructed maps using both \textit{qplot} and \textit{qmap} functions but we only present the google maps.\\ 
 
 <<census,cache=TRUE, warning=FALSE, message=FALSE>>=
 setwd("U:/classes/585X")
-#library(XML)
 
 ###pull the iowa census data from the web
 src ="http://tigerweb.geo.census.gov/tigerwebmain/Files/tigerweb_acs13_tract_ia.html"
 tables <- readHTMLTable(src)
 tigeria <- tables[[1]]
-dim(tigeria)
 
 ###transform the data to the desired format
 
@@ -342,129 +326,129 @@ dsmriv <- tigeria
 poly.coords.ia <- as.data.frame(dsmriv[,c("INTPTLAT","INTPTLON")])
 row.names(poly.coords.ia) <- NULL
 names(poly.coords.ia) <- c("x","y")
-dim(poly.coords.ia)
 
 poly.coords.ia[,1] <- as.numeric(as.vector(poly.coords.ia[,1]))
 poly.coords.ia[,2] <- as.numeric(as.vector(poly.coords.ia[,2]))
 
 ##plot the area
-#library(ggplot2)
-qplot(y,x,data=poly.coords.ia)
-
-#library(maps)
-#library(ggmap)
+#qplot(y,x,data=poly.coords.ia)
 
 qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
   geom_point(data=poly.coords.ia , 
              mapping=aes(x=y, y=x), size=2) 
 ###always remember, longitude first, then latitude!!!!!!
+@
 
+The data for the Des Moines River is extracted from the full dataframe on the hydrologic levels in Iowa. Again, we construct a dataframe with numeric values for the point coordinates and we overlay this data on the previous map. \\
+
+<<censusdsm,cache=TRUE, warning=FALSE, message=FALSE>>=
+setwd("U:/classes/585X")
 
 ###pull the hydrologic iowa data from the web
 
 src ="http://tigerweb.geo.census.gov/tigerwebmain/Files/tigerweb_tab10_hydro_poly_ia.html"
 tables <- readHTMLTable(src)
 tigeria <- tables[[1]]
-dim(tigeria)
 
 ### transform the data to the desired format and pull the information of interest
-mode(tigeria$NAME)
 tigeria$NAME <- as.character(tigeria$NAME)
 
 ## pull the des moines river data 
 dsmriv <- tigeria[tigeria$NAME == "Des Moines Riv",]
-dim(dsmriv)
 
 poly.coords <- as.data.frame(dsmriv[,c("INTPTLAT","INTPTLON")])
 row.names(poly.coords) <- NULL
 names(poly.coords) <- c("x","y")
-dim(poly.coords)
 
 poly.coords[,1] <- as.numeric(as.vector(poly.coords[,1]))
 poly.coords[,2] <- as.numeric(as.vector(poly.coords[,2]))
 
 ##overlay the des moines river area over the iowa plot
 
-qplot(y,x,data=poly.coords.ia)+geom_point(data=poly.coords,aes(x=y,y=x),color="red")
+#qplot(y,x,data=poly.coords.ia)+geom_point(data=poly.coords,aes(x=y,y=x),color="red")
 
-
-qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
-  geom_point(data=poly.coords, 
-             mapping=aes(x=y, y=x), size=2) 
-
+#qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
+#  geom_point(data=poly.coords, 
+#             mapping=aes(x=y, y=x), size=2) 
 
 qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
   geom_point(data=poly.coords.ia , 
              mapping=aes(x=y, y=x), size=2) +
   geom_point(data=poly.coords, 
              mapping=aes(x=y, y=x), size=2,color="red") 
-
-
-## create a region of interest around the des moines river
-#library('plyr')
-set.seed(2013)
-add.poly.coords <- as.data.frame(t(ldply(llply(poly.coords,function(x) ldply(x,function(y) jitter(rep(y,7),0.075))),unlist)[,-1]))
-names(add.poly.coords) <- c("x","y")
-
-qplot(y,x,data=poly.coords.ia)+geom_point(data=poly.coords,aes(x=y,y=x),color="red")+
-                          geom_point(data=add.poly.coords,aes(x=y,y=x),color="green")
-
-# gets the values of the pixels
-loc.newcoords <- project(cbind(add.poly.coords[,2],add.poly.coords[,1]), proj = "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs")
 @
 
-\section{Results}
 
-We extract the pixel count information available in the CDL data for the points in the desired region, for each year of interest. We present summaries for all the crop categories (corn, soybean, etc), by year in the following tables. 
+The next challenge is to mimic the CEAP sample. The Des Moines River data contains points only on the river, but not on the entire watershed. We are using the \textit{plyr} package in R to expand this sample of points, in order to capture the region along the river. The approach we decide to use is to add noise to each of the existing points, using the \textit{jitter} function. Also, we create six more points in the nearest neighborhood of the existing points. A map of the final region is presented below.
 
-<<results,warning=FALSE,message=FALSE>>=
+<<censusdsmregion,cache=TRUE, warning=FALSE, message=FALSE>>=
 
-# ?cellFromXY
-# cellFromXY
+## create a region of interest around the des moines river
 
+set.seed(2013)
+add.poly.coords <- as.data.frame(t(ldply(llply(poly.coords,function(x) {
+                  ldply(x,function(y) jitter(rep(y,7),0.075))}),unlist)[,-1]))
+names(add.poly.coords) <- c("x","y")
+
+#qplot(y,x,data=poly.coords.ia)+
+#    geom_point(data=poly.coords,aes(x=y,y=x),color="red")+
+#    geom_point(data=add.poly.coords,aes(x=y,y=x),color="green")
+
+qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
+  geom_point(data=poly.coords.ia , 
+             mapping=aes(x=y, y=x), size=2) +
+  geom_point(data=poly.coords, 
+             mapping=aes(x=y, y=x), size=2,color="red")+
+  geom_point(data=add.poly.coords, 
+             mapping=aes(x=y, y=x), size=2,color="green") 
+d = nrow(add.poly.coords)
+@
+
+Once we have the desired region and a fairly sizeable sample (a number of \Sexpr{d}), we extract the information from the CDL data. First, we create the matrix of point coordinates in coordinate reference system (CRS) using the attributes of the raster objects described previously. Next we use the \textit{cellFromXY} function to extract the pixel count information available in the CDL data for the points in the region, for each year of interest. The results are numeric vectors of size \Sexpr{d}, containing the crop codes for the points. We construct the proportions of crops, by category, by year and the results are in the code chunk below. 
+
+
+<<CRSdata,cache=TRUE, warning=FALSE, message=FALSE>>=
+
+# get the coordinates in CRS
+loc.newcoords <- project(cbind(add.poly.coords[,2],add.poly.coords[,1]), proj = "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs")
+
+# gets the values of the pixels
 cdl.pts3 <- cdl.ia03[cellFromXY(cdl.ia03, loc.newcoords)]
-#table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
+table(cdl.pts3)/length(cdl.pts3[-which(is.na(cdl.pts3))])*100
 
 
 cdl.pts4 <- cdl.ia04[cellFromXY(cdl.ia04, loc.newcoords)]
-#table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
+table(cdl.pts4)/length(cdl.pts4[-which(is.na(cdl.pts4))])*100
 
 cdl.pts5 <- cdl.ia05[cellFromXY(cdl.ia05, loc.newcoords)]
-#table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
+table(cdl.pts5)/length(cdl.pts5[-which(is.na(cdl.pts5))])*100
 
 
 cdl.pts6 <- cdl.ia06[cellFromXY(cdl.ia06, loc.newcoords)]
-#table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
+table(cdl.pts6)/length(cdl.pts6[-which(is.na(cdl.pts6))])*100
 
 
 cdl.pts7 <- cdl.ia07[cellFromXY(cdl.ia07, loc.newcoords)]
-#table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
+table(cdl.pts7)/length(cdl.pts7[-which(is.na(cdl.pts7))])*100
+@
+
+However, we would like to present the results in a nicer way, displaying the crop classes corresponding the codes, in order to better understand the changes over this time period. For this, we pull the codes and classes data from the NASS website. We save this data into a dataframe, containg two columns, one column of codes and one column of classes. \\
+
+Next, we merge the codes and classes dataset with the yearly CDL point datasets. 
+
+<<codes,warning=FALSE,message=FALSE>>=
 
 src ="http://www.nass.usda.gov/research/Cropland/docs/CDL_2013_crosswalk.htm"
 tables <- readHTMLTable(src)
 codes <- tables[[1]]
-#dim(codes)
-#code [7:20,]
+
+##keep only the codes/classes information
 codes <- as.data.frame(codes[-c(1:9,266:316),1:2])
 names(codes) <-  c("code","class")
-#head(codes)
+codes[,"class"] <- as.character(codes[,"class"])
 
-
-
-## the problem here is to merge two data frames of different sizes, by one column
-## the column in one data frame to merge by is a subset of the corresponding column in the second data frame
-## I read on join function and on its attributes, seems that
-## join(codes, pts, type="right") does it but the second column of characters is converted in NAs...why?
-
-#pts <- as.data.frame(cdl.pts3[-which(is.na(cdl.pts3))])
-#names(pts) <- "code"
-#join(codes, pts,by="code") -> res
-#res[match(pts[,"code"],res[,"code"]),] -> res2
-#table(res2[,"class"])/ nrow(pts) *100
-
-codes[,"class"] <- as.character(codes[,"class"]) ###keeping on getting zeros bc table is not defined function...arghhhhh, they are nto character strings
-
-results <- function(x){
+##function to merge the points and the codes datasets, by the commun codes
+merging <- function(x){
 pts <- as.data.frame(x[-which(is.na(x))])
 names(pts) <- "code"
 join(codes, pts, by="code") -> res
@@ -472,37 +456,64 @@ res[match(pts[,"code"],res[,"code"]),] -> res2
 return (table(res2[,"class"])/ nrow(pts) *100)
 }
 
-## the next problem would be to combine all the years cdl.pts into one data frame
-
 pts37 <- as.data.frame(cbind(cdl.pts3, cdl.pts4, cdl.pts5,cdl.pts6, cdl.pts7))
 
-d <- apply(pts37,2,results)   ###or alply
+d <- apply(pts37,2,merging)   ###or alply
 
-laply(d,length)
-
-##let's try to bring all the years to same number of crop categoris by imputing NA for the years where a crop is missing
-#cropmaxno <- max(laply(d,length))
+d2 <- laply(d,length) ###different sizes
 
 allcrops <- unlist(llply(d, function(x) names(x)))
 cropmaxno <- length(unique(allcrops))
+@
 
-#aply(d,function(x) names(x) <- unique(allcrops))  ## doent do it automatically
+The first challenge is due to the fact that the sizes differ. The data for each year contains information on the crop classes planted that year, a subset of the total number of crop classes. 
+
+\begin{table}[h!]
+\begin{center}
+\begin{tabular}{cccccc}
+\hline
+Total  & 2003 & 2004 & 2005 & 2006 & 2007 \\ 
+\hline
+\Sexpr{cropmaxno} &  \Sexpr{d2[1]} & \Sexpr{d2[2]}& \Sexpr{d2[3]}&\Sexpr{d2[4]} & \Sexpr{d2[5]}\\ 
+\hline
+\end{tabular}
+\caption{Number of crop classes by year} 
+\end{center}
+\end{table}
+
+We write a function using the \textit{join} in \textit{plyr} and the \textit{match} functions in R to complete this task and apply it to the yearly information. \\
+
+The next challenge is to complete yearly information so that all the years have the same number of crop classes. The approach we decide to take is to introduce missing data for the classes that are missing in a year. Our first option for tools is the \textit{--ply} function from the \textit{plyr} package but we do not find a direct way of completing this task. Also, we try to apply a function that imputes missing values and new crop classes for each year, where the yearly data is an element in a list. This is not successful either because we can not make changes to elements in the list. 
+
+<<codesclasses,warning=FALSE,message=FALSE, eval=FALSE>>=
+##bring all the years to same number of crop categoris 
+##by imputing NA for the years where a crop is missing
+dat <- d
+laply(dat,function(x) names(x) <- unique(allcrops))  ## doesn't do it automatically
 
 
 ###this function should work!!!!!!!!
-#llply(d, function(x) {
-#for (i in 1:cropmaxno)
-#if (length(grep(unique(allcrops)[i],names(x)))<1) {
-#      x <- c(x, NA)
-#      names(x)[i] <- unique(allcrops)[i]
-#    }       
-#})
-## the problem is that we cannot assign the changes to each element
+llply(dat, function(x) {
+  for (i in 1:cropmaxno)
+    if (length(grep(unique(allcrops)[i],names(x)))<1) {
+      x <- c(x, NA)
+      names(x)[i] <- unique(allcrops)[i]
+    }   
+})
 
-##this should do it
+## the problem is that we cannot assign the changes to each element
+@
+
+So we decide to write a function that verifies the mathing between the existing classes in a year data and the set of all classes, using \textit{grep} and \textit{identical} functions. The idea turns out to be the final product idea, however there is one more challenge. Some crop classes have names that include other crop classes, for example \textit{Developed} and \textit{Developed/Low  Intensity} or \textit{Developed/Open Space}. The \textit{grep} function verifies for elements in a set, but only as substrings of strings. This function does not verify for a perfect string match. Using a few \textit{if} statements and the \textit{debug/browser} functions we complete the task. The resulting function is applied to the existing data and it creates a list of yearly data, each element containing crop classes and proportion of cultivated land in each class. The data is then combined into a final product dataframe. \\
+
+\textit{Note:} Ideally, we would have preferred using the \textit{plyr} package to complete this task, by assigning a function to each element in a list and obtain a dataframe (i.e \textit{dlply} function), however the number of crop classes differs by year (elements in the list have different sizes) and a dataframe can not have columns of different sizes. We would further investigate if there are functions to handle these challenges.
+
+<<codes2,warning=FALSE,message=FALSE>>=
+##try
 fxn <- function(data) {
   for (x in 1:length(data)) {
     for (i in 1:cropmaxno)
+      
       if (length(grep(unique(allcrops)[i],names(data[[x]])))<1) {
        data[[x]] <- c(data[[x]], NA)
        names(data[[x]])[i] <- unique(allcrops)[i]
@@ -514,25 +525,11 @@ return(data)
 
 #fxn(d) -> newd
 
-##it works, except for the last year, where the categories are developed, developed open space, developed etc...
+##it works, except for the last year, where the categories are developed,
+## developed open space, developed etc...
 ##the grep function fails because developed is subset ...need to match exactly...
 
-##this doesn work either
-fxn <- function(data) {
-  for (x in 1:length(data)) {
-    for (i in 1:cropmaxno)
-      if ((length(grep(unique(allcrops)[i],names(data[[x]])))<1)||(length(grep(names(data[[x]]),unique(allcrops)[i]))<1) ) {
-       data[[x]] <- c(data[[x]], NA)
-       names(data[[x]])[i] <- unique(allcrops)[i]
-      }  
-    paste("change number",data)
-  }
-return(data)
-}
-#fxn(d) -> newd
-
-##Chritmas treeeeeeeeeeeees
-
+##next try
 fxn <- function(data) {
 
   #  browser()
@@ -567,15 +564,16 @@ fxn(d) -> newd
 
 #debug(fxn(d))
 
+laply(newd,length)  ###works!!!!! all years have same number of crop classes
 
-laply(newd,length)  ###works!!!!!
+## now combine all the years cdl.pts into one data frame
 
 d <- as.data.frame(newd)
-
-
-##ideally we would like adply so that the result is a dataframe; however the number of categories differs by year, hence the columns in the resulting data frame are not of same length
 @
 
+\section{Results}
+
+We present summaries for all the crop classes, by year in the following table. 
 
 \begin{table}[h!]
 \begin{center}
@@ -593,7 +591,7 @@ Oats &  \Sexpr{d[7,1]}  & \Sexpr{d[7,2]} & \Sexpr{d[7,3]} & \Sexpr{d[7,4]} & \Se
 Other Small  Grains &  \Sexpr{d[8,1]}  & \Sexpr{d[8,2]} & \Sexpr{d[8,3]} & \Sexpr{d[8,4]} & \Sexpr{d[8,5]} \\ 
 
 Soybeans &  \Sexpr{d[9,1]} & \Sexpr{d[9,2]}& \Sexpr{d[9,3]}&\Sexpr{d[9,4]} & \Sexpr{d[9,5]}\\ 
-water &  \Sexpr{d[10,1]}  & \Sexpr{d[10,2]} & \Sexpr{d[10,3]} & \Sexpr{d[10,4]} & \Sexpr{d[10,5]}\\ 
+Water &  \Sexpr{d[10,1]}  & \Sexpr{d[10,2]} & \Sexpr{d[10,3]} & \Sexpr{d[10,4]} & \Sexpr{d[10,5]}\\ 
 Christmas Trees & \Sexpr{d[11,1]}  & \Sexpr{d[11,2]} & \Sexpr{d[11,3]} & \Sexpr{d[11,4]}& \Sexpr{d[11,5]} \\ 
 Clouds/No Data  & \Sexpr{d[12,1]}  & \Sexpr{d[12,2]} & \Sexpr{d[12,3]} & \Sexpr{d[12,4]} & \Sexpr{d[12,5]}\\ 
 Nonag/Undefined  &  \Sexpr{d[13,1]}  & \Sexpr{d[13,2]} & \Sexpr{d[13,3]} & \Sexpr{d[13,4]} & \Sexpr{d[13,5]}\\ 
@@ -609,13 +607,29 @@ Woody Wetlands &  \Sexpr{d[21,1]}  & \Sexpr{d[21,2]} & \Sexpr{d[21,3]} & \Sexpr{
 
 \hline
 \end{tabular}
-\caption{Estimates for the area effects variance component, $\sigma_b^2$} 
+\caption{Proportion of land by crop class, by year.} 
 \end{center}
 \end{table}
 
-
-
 \section{Conclusions/ Future work}
-The final comments would be on the changes in crop categories over this time period and the effect on the future analysis done with the CEAP data. 
+
+The following conclusions hold only for the region we have described in the previous section. Whether they still hold for the real CEAP data needs future investigation. \\
+
+Notice that 8 out of the 21 total crop classes are missing for all the years, for this particular region. Also, some of the crop classes are present only in some years, for example \textit{Christmas trees} are not recorded, for this region, in 2003 and in 2007. \\
+
+There seem to be missing records in 2004 and 2006 due to clouds and to undefined records. These proportions are significantly larger than most of the crop classes proportions. However, the records from 2003, 2005 and 2007 seem to have better records of crop classes, not being affected of missing data.\\
+
+We notice significant changes in some important crops over the years, for example corn and soybeans. The corn proportion of land is low in 2004 and 2005, while the soybean proportion of land is low in all but 2003, even missing in 2007. This trend would affect the analysis because the frame was designed in 2003 and we see greater changes in the follwoing years, when the data was collected. Some points seem to have changes classes.\\
+
+The next step is to utilize the tools constructed in this project to analyze changes in the real CEAP data. We would also like to investigate the CDL data as opossible source of covariates in CEAP small area models.
+
+
+\section{References:}
+\begin{enumerate}
+
+\item Hijmans, R. (2014), ''Package `plyr','' \textit{http://cran.r-project.org/web/packages/plyr/plyr.pdf}
+\item Wickham, H. (2014), ''Package `raster','' \textit{http://cran.at.r-project.org/web/packages/raster/raster.pdf}
+
+\end{enumerate}
 
 \end{document}
