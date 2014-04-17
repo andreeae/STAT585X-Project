@@ -51,7 +51,7 @@ National Resources Inventory (NRI) is an annual survey conducted collaboratively
 Conservation Effects Assessment Project (CEAP) is a series of surveys intended to quantify environmental effects of conservation prctices and programs by hydrologic unit codes (HUCs). The following image illustrates the division of the United States territory into 2-digits HUCs and the sudivision of the Upper Mississippi region into 4-digit HUCs.  
 
 \begin{center}
-\includegraphics[width=16cm, height=8cm]{HUC2-4-8.jpg} 
+\includegraphics[width=16cm, height=8cm]{images/HUC2-4-8.jpg} 
 \end{center}
 
 The CEAP sample is a subset of the NRI points classified as cultivated cropland. The data was collected using farmers interviews and NRCS hydrologic, climate and soil databases. The data was then filtered through an APEX model (black box) and the result is a set of observations for usable points for 19 response variables. The final goal is to produce erosion estimates for 8-digit HUCs. \\
