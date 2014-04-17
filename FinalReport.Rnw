@@ -70,27 +70,27 @@ The CEAP sample data for the Des Moines River Watershed (HUC 0710) region is not
 
 \item Crop Data Layer (CDL)\\
 
-The CDL data is available at \href {CDL}{http://nassgeodata.gmu.edu/CropScape/} in the form of Tagged Image File (.tif) Format. We are interested in the state of Iowa data, available for the years of 2003-2007. The information consists of pixel counts and acreage values for different categories of cropland data. Each of the category has an associated value (code), for example 1 stands for Corn and 5 stands for Soybean. A complete list of category codes and class names for the USDA NASS CDL is available at \href{Codes}{http://www.nass.usda.gov/research/Cropland/docs/CDL_2013_crosswalk.htm}.
+The CDL data is available at \url{http://nassgeodata.gmu.edu/CropScape/} in the form of Tagged Image File (.tif) Format. We are interested in the state of Iowa data, available for the years of 2003-2007. The information consists of pixel counts and acreage values for different categories of cropland data. Each of the category has an associated value (code), for example 1 stands for Corn and 5 stands for Soybean. A complete list of category codes and class names for the USDA NASS CDL is available at \url{http://www.nass.usda.gov/research/Cropland/docs/CDL_2013_crosswalk.htm}.
 
 
 \item Census Topologically Integrated Geographic Encoding and Referencing database (Tigerweb) \\
 
-The Census Tigerweb data is available at \href{Census}{http://tigerweb.geo.census.gov/tigerwebmain} for both national and regional levels. Also, data for the hydrologic levels is available at 
+The Census Tigerweb data is available at \url{http://tigerweb.geo.census.gov/tigerwebmain} for both national and regional levels. Also, data for the hydrologic levels is available at 
 
-\href{HydroCensus}{http://tigerweb.geo.census.gov/tigerwebmain/Files/tigerweb_tab10_hydro_poly_ia.html}. We are interested in the state of Iowa data, as well as the Des Moines River data. In particular, we are interested in the points coordinates. 
+\url{http://tigerweb.geo.census.gov/tigerwebmain/Files/tigerweb_tab10_hydro_poly_ia.html}. We are interested in the state of Iowa data, as well as the Des Moines River data. In particular, we are interested in the points coordinates. 
 
 
 \item Public Land Survey System (PLSS)\\
 
-The PLSS data can be found on \href{PLSS}{http://www.geocommunicator.gov/GeoComm/lsis_home/home/index.htm} in the form of shapefiles. Information is available at both state and county levels. 
+The PLSS data can be found on \url{http://www.geocommunicator.gov/GeoComm/lsis_home/home/index.htm} in the form of shapefiles. Information is available at both state and county levels. 
 
 \item   GIS data on hydrologic basins\\
 
-The GIS data can be found at \href{GIS}{ftp://ftp.igsb.uiowa.edu/gis_library/basins/} in the form of shapefiles. Information is available for the entire Des Moines River basin.
+The GIS data can be found at \url{ftp://ftp.igsb.uiowa.edu/gis_library/basins/} in the form of shapefiles. Information is available for the entire Des Moines River basin.
 
 \item   Atlas of historical countyu boundaries (AtlasHCB)\\
 
-The AtlasHCB data is available at \href{AtlasHCB}{http://publications.newberry.org/ahcbp/pages/Iowa.html} in the form of shapefiles. Information is available for the entire state of Iowa.
+The AtlasHCB data is available at \url{http://publications.newberry.org/ahcbp/pages/Iowa.html} in the form of shapefiles. Information is available for the entire state of Iowa.
 
 \section{Data Collection and Processing Steps}
 
@@ -103,7 +103,7 @@ Except for the CENSUS Tigerweb data and the CDL codes and classification data, a
 We first download the data for years 2003-2007 from the website, following these steps:
 
 \begin{enumerate}
-\item Open this link in an internet browser: \href {CDL} {http://nassgeodata.gmu.edu/CropScape/}. We now have the United States map and some tabs on the left and at the top of the map;
+\item Open this link in an internet browser: \url{http://nassgeodata.gmu.edu/CropScape/}. We now have the United States map and some tabs on the left and at the top of the map;
 \item Click on the \textit{US map -like} tab at the top, hoovering over it says \textit{Define Area of Interest by Region/State/ASD/County}, select \textit{State} as the \textit{Level} and \textit{Iowa} as the \textit{state}. Click \textit{Submit};
 \item Select the years of interest (in this case 2003-2007), one by one and download the data. These file are large, so downloading them takes long time. 
 \end{enumerate}
@@ -142,7 +142,7 @@ The information in the AtlasHCB data is based on historical records and it is on
 On the other hand, PLSS data have large dimensions and storage space has been a challenge in this project. The processing steps are similar to the ones described above, in this section, because we are once again dealing with shapefiles. Also, the data is available at both state and county levels, but not at hydrologic levels. Hence, we decide to search for another source of data. Census data turns out to be very useful for us, and we decribe it in the next section.
 
 
-<<GIS,eval = FALSE, message=FALSE,warning=FALSE>>=
+<<GIS,eval = FALSE, message=FALSE,warning=FALSE,echo=FALSE>>=
 
 xx <-  readShapeSpatial("data/igsb/basin.shp")
 xxx <- thinnedSpatialPoly(as(xx,"SpatialPolygons"),
@@ -315,7 +315,9 @@ We pull both the Iowa data and the Des Moines River data from the web using the 
 ###pull the iowa census data from the web
 src ="http://tigerweb.geo.census.gov/tigerwebmain/Files/tigerweb_acs13_tract_ia.html"
 tables <- readHTMLTable(src)
+ldply(tables,dim)
 tigeria <- tables[[1]]
+head(tigeria)
 
 ###transform the data to the desired format
 
@@ -345,7 +347,9 @@ The data for the Des Moines River is extracted from the full dataframe on the hy
 
 src ="http://tigerweb.geo.census.gov/tigerwebmain/Files/tigerweb_tab10_hydro_poly_ia.html"
 tables <- readHTMLTable(src)
+ldply(tables,dim)
 tigeria <- tables[[1]]
+head(tigeria)
 
 ### transform the data to the desired format and pull the information of interest
 tigeria$NAME <- as.character(tigeria$NAME)
@@ -429,28 +433,57 @@ cdl.pts7 <- cdl.ia07[cellFromXY(cdl.ia07, loc.newcoords)]
 table(cdl.pts7)/length(cdl.pts7[-which(is.na(cdl.pts7))])*100
 @
 
-However, we would like to present the results in a nicer way, displaying the crop classes corresponding the codes, in order to better understand the changes over this time period. For this, we pull the codes and classes data from the NASS website. We save this data into a dataframe, containg two columns, one column of codes and one column of classes. \\
+However, we would like to present the results in a nicer way, displaying the crop classes corresponding the codes, in order to better understand the changes over this time period. For this, we pull the codes and classes data from the NASS website. These HTML data need more cleaning because there are multiple tables on the page, as well as paragraphs of text. We only need the table containg the codes and the associated classes so we need to filter out some rows and columns from the table pulled using the \testit{readHTMLTable} function. We save the data into a dataframe, containg two columns, one column of codes and one column of classes, and we give the appropriate names. \\
 
-Next, we merge the codes and classes dataset with the yearly CDL point datasets. 
+Next, we merge the codes and classes dataset with the yearly CDL point datasets, saving only the proportion of points in each code. We start by writing a general function to complete this task but, using the \textit{debug/browser} functions in \textit{R} we are able to identify challenges as we continue coding.
+
 
 <<codes,warning=FALSE,message=FALSE>>=
 
 src ="http://www.nass.usda.gov/research/Cropland/docs/CDL_2013_crosswalk.htm"
 tables <- readHTMLTable(src)
+ldply(tables,dim)
 codes <- tables[[1]]
+head(codes)
 
 ##keep only the codes/classes information
+
+##one way is tu navigate on the source page and use root/children XML ideas
+##but the source code is not in a compact format, it is written such that 
+##the objects on the page are not uniquely identified (no options, values, etc)
+
+url <- "http://www.nass.usda.gov/research/Cropland/docs/CDL_2013_crosswalk.htm"
+
+doc <- htmlParse(url)
+root <- xmlRoot(doc)
+
+length(xmlChildren(root))
+
+xmlName(xmlChildren(root)[[2]])
+
+length(xmlChildren(xmlChildren(root)[[2]]))
+
+
+length(getNodeSet(root, "//table"))
+length(getNodeSet(root, "//@width"))
+length(getNodeSet(root, "//table[@width]"))
+##since we only need the first two columns, we select them using 1:2
+##as for the rows, we need to count the first 9 rows of text and skip them
+##and also we need to through away the last chunck of rows 
+
 codes <- as.data.frame(codes[-c(1:9,266:316),1:2])
 names(codes) <-  c("code","class")
 codes[,"class"] <- as.character(codes[,"class"])
 
-##function to merge the points and the codes datasets, by the commun codes
+##function to merge the points and the codes datasets, by the common codes
 merging <- function(x){
-pts <- as.data.frame(x[-which(is.na(x))])
-names(pts) <- "code"
-join(codes, pts, by="code") -> res
-res[match(pts[,"code"],res[,"code"]),] -> res2
-return (table(res2[,"class"])/ nrow(pts) *100)
+  
+    pts <- as.data.frame(x[-which(is.na(x))])
+    names(pts) <- "code"
+    join(codes, pts, by="code") -> res
+    res[match(pts[,"code"],res[,"code"]),] -> res2
+    
+    return (table(res2[,"class"])/ nrow(pts) *100)
 }
 
 pts37 <- as.data.frame(cbind(cdl.pts3, cdl.pts4, cdl.pts5,cdl.pts6, cdl.pts7))
@@ -486,6 +519,7 @@ The next challenge is to complete yearly information so that all the years have 
 ##bring all the years to same number of crop categoris 
 ##by imputing NA for the years where a crop is missing
 dat <- d
+
 laply(dat,function(x) names(x) <- unique(allcrops))  ## doesn't do it automatically
 
 
@@ -501,7 +535,7 @@ llply(dat, function(x) {
 ## the problem is that we cannot assign the changes to each element
 @
 
-So we decide to write a function that verifies the mathing between the existing classes in a year data and the set of all classes, using \textit{grep} and \textit{identical} functions. The idea turns out to be the final product idea, however there is one more challenge. Some crop classes have names that include other crop classes, for example \textit{Developed} and \textit{Developed/Low  Intensity} or \textit{Developed/Open Space}. The \textit{grep} function verifies for elements in a set, but only as substrings of strings. This function does not verify for a perfect string match. Using a few \textit{if} statements and the \textit{debug/browser} functions we complete the task. The resulting function is applied to the existing data and it creates a list of yearly data, each element containing crop classes and proportion of cultivated land in each class. The data is then combined into a final product dataframe. \\
+So we decide to write a function that verifies the mathing between the existing classes in a year data and the set of all classes, using regular expressions. In particular, we use the \textit{grep} and \textit{identical} functions. The idea turns out to be the final product idea, however there is one more challenge. Some crop classes have names that include other crop classes, for example \textit{Developed} and \textit{Developed/Low  Intensity} or \textit{Developed/Open Space}. The \textit{grep} function verifies for elements in a set, but only as substrings of strings. This function does not verify for a perfect string match. Using a few \textit{if} statements and the \textit{debug/browser} functions we complete the task. The resulting function is applied to the existing data and it creates a list of yearly data, each element containing crop classes and proportion of cultivated land in each class. The data is then combined into a final product dataframe. \\
 
 \textit{Note:} Ideally, we would have preferred using the \textit{plyr} package to complete this task, by assigning a function to each element in a list and obtain a dataframe (i.e \textit{dlply} function), however the number of crop classes differs by year (elements in the list have different sizes) and a dataframe can not have columns of different sizes. We would further investigate if there are functions to handle these challenges.
 
@@ -618,8 +652,14 @@ There seem to be missing records in 2004 and 2006 due to clouds and to undefined
 
 We notice significant changes in some important crops over the years, for example corn and soybeans. The corn proportion of land is low in 2004 and 2005, while the soybean proportion of land is low in all but 2003, even missing in 2007. This trend would affect the analysis because the frame was designed in 2003 and we see greater changes in the follwoing years, when the data was collected. Some points seem to have changes classes.\\
 
-We have successfully worked with big data in different formats (.tif, web, coordinates in different measurement system) and developed tools to manipulate and extract useful infromation out of it. The next step is to utilize the tools constructed in this project to analyze changes in the real CEAP data. We would also like to investigate the CDL data as possible source of covariates in CEAP small area models. Another possible extension of this work with be the implementation of a shiny app. This would allow the users to better interact with CEAP data from yearly surveys, from different regions across United States.
 
+We have successfully worked with big data in different formats (.tif, web, coordinates in different measurement system, text and general expressions use) and developed tools to manipulate and extract useful infromation out of it. The next step is to utilize the tools constructed in this project to analyze changes in the real CEAP data. We would also like to investigate the CDL data as possible source of covariates in CEAP small area models. Another possible extension of this work with be the implementation of a web application, such as shiny. This would allow the users to better interact with CEAP data from yearly surveys, from different regions across United States.
+
+\section{Final note}
+
+This work is completed under the theme of reproducible research and we have created a GitHub repository containing all the files. There have been challenges in maintaining a flow in the pull/commit/push steps throughout the work. Not only we have filled up the \textit{U:} drive space when downloading the large CDL data, but also we have confused GitHub when trying to upload the data on the web repository. When we tried to upload the data, the commit went through but we were not able to push. Hence, we has to use linux commands, such as \textit{git commit -m "commit message"} and take control in the command line. Also, the terminal server ts2.stat.iastate.edu crashed due to heavy load one day, when we were completing a commit. The files remained checked when git crushed. Once again, we used the linux commands, such as \textit{rm -f ./.git/index.lock} to unlock everything and be able to commit and push.\\
+
+This report is available in my current GitHub repository, \url{https://github.com/andreeae/STAT585X-Project}, under \textit{FinalReport.Rnw}. The .pdf and the data are available upon request, as it can not be updated due to large size.
 
 \section{References:}
 \begin{enumerate}
