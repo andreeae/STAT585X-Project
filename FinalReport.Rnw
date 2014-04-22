@@ -94,7 +94,7 @@ The AtlasHCB data is available at \url{http://publications.newberry.org/ahcbp/pa
 
 \section{Data Collection and Processing Steps}
 
-We explored all these different data sources using different R tools. These data differ in format, in dimension and, most importantly, in the enclosed information. We are interested in a very specific region in the state of Iowa so it is very important to select the sources that provide us with most useful information. \\
+We explored all these different data sources using R tools. These data differ in format, in dimension and, most importantly, in the enclosed information. We are interested in a very specific region in the state of Iowa so it is very important to select the sources that provide us with most useful information. \\
 
 Except for the CENSUS Tigerweb data and the CDL codes and classification data, all other files need to be downloaded and stored in the working folder. If you are not able to download it from the web (steps are presented below), please contact us and we will provide you the data. 
 
@@ -127,13 +127,13 @@ cdl.ia03
 @
 
 
-Notice the attributes of the raster objects. One of the most important ones for us is the coordinate reference system (CRS), or the map projection. We would need this in order to carefully manipulate the future data on the region of interest to get the matching coordinate reference (more details follow). The objects we have so far are 'skeletons,' because they only contain attributes of the data, not the actual values stored. We are going to read the values for the region of interest using cell numbers and coordinates (xy) in the extraction method from the \textit{cellFromXY} function. For this, we need the coordinates for the Des Moines River Watershed and surrounding area. 
+Notice the attributes of the raster objects. One of the most important attributes, for us, is the coordinate reference system (CRS), or the map projection. We need to pay greater attention to this attribute in order to carefully manipulate the future data on the region of interest, to get the matching coordinate reference (more details follow). The objects we have so far are 'skeletons,' because they only contain attributes of the data, not the actual values stored. In other words, \textit{cdl.ia03 -like} objects are \textit{RatserLayers} that do not contain any cell (pixel) value in (RAM) memory, they only contain the parameters that describe the \textit{RasterLayers}. We are going to read the values for the region of interest using cell numbers and coordinates (xy) in the extraction method using the \textit{cellFromXY} function. For this, we need the coordinates for the Des Moines River Watershed and surrounding area, denoted as the region of interest. 
 
 \subsection{ GIS, PLSS, AtlasHCB data }
 
 GIS, PLSS, AtlasHCB data sources are considered at first. However, we do not use any in the final results. The dimensions are smaller than the dimensions of the CDL data, so downloading and storing is not as demanding anymore. However, the information in the data is not realible and, as it turns out, not useful for our purposes.\\
 
-We first download the data, small dimensions in comparison to the raster data. We read in the data and we extract the polygons information from the shapefiles using the \textit{maptools} library in R and the function developed in one of the STAT 585X labs, to extract the county based information.\\
+We first download the data from the websites. We read in the data and we extract the polygons information from the shapefiles using the \textit{maptools} library in R and the function developed in one of the STAT 585X labs, to extract the county based information.\\
 
 For the GIS data, after mapping the region, we realized that it covers the entire basin, more than what we are interested in. Also, the polygon data is in the universal transverse mercador (UTM) and we need to convert it to the longitude-latitude, then to the CRS with the appropriate raster characteristics. \\
 
@@ -433,7 +433,7 @@ cdl.pts7 <- cdl.ia07[cellFromXY(cdl.ia07, loc.newcoords)]
 table(cdl.pts7)/length(cdl.pts7[-which(is.na(cdl.pts7))])*100
 @
 
-However, we would like to present the results in a nicer way, displaying the crop classes corresponding the codes, in order to better understand the changes over this time period. For this, we pull the codes and classes data from the NASS website. These HTML data need more cleaning because there are multiple tables on the page, as well as paragraphs of text. We only need the table containg the codes and the associated classes so we need to filter out some rows and columns from the table pulled using the \testit{readHTMLTable} function. We save the data into a dataframe, containg two columns, one column of codes and one column of classes, and we give the appropriate names. \\
+However, we would like to present the results in a nicer way, displaying the crop classes corresponding the codes, in order to better understand the changes over this time period. For this, we pull the codes and classes data from the NASS website. These HTML data need more cleaning because there are multiple tables on the page, as well as paragraphs of text. We only need the table containg the codes and the associated classes so we need to filter out some rows and columns from the table pulled using the \textit{readHTMLTable} function.One way of doing this is simply exclude the rows and the columns that are not of interest. Another, more elegant, way of accomplishing this task is to navigate on the source page and use the \textit{XML} root and childern information. However, the source code is not in a compact format, the objects are not uniquely identifiable (there are no options, no values and such). So we can not track the path to the only one table of interest and we use the first method, of simply excluding some rows and columns. We save the data into a dataframe, containg two columns, one column of codes and one column of classes, and we give the appropriate names. \\
 
 Next, we merge the codes and classes dataset with the yearly CDL point datasets, saving only the proportion of points in each code. We start by writing a general function to complete this task but, using the \textit{debug/browser} functions in \textit{R} we are able to identify challenges as we continue coding.
 
@@ -448,7 +448,7 @@ head(codes)
 
 ##keep only the codes/classes information
 
-##one way is tu navigate on the source page and use root/children XML ideas
+##one way is to navigate on the source page and use root/children XML ideas
 ##but the source code is not in a compact format, it is written such that 
 ##the objects on the page are not uniquely identified (no options, values, etc)
 
@@ -535,7 +535,7 @@ llply(dat, function(x) {
 ## the problem is that we cannot assign the changes to each element
 @
 
-So we decide to write a function that verifies the mathing between the existing classes in a year data and the set of all classes, using regular expressions. In particular, we use the \textit{grep} and \textit{identical} functions. The idea turns out to be the final product idea, however there is one more challenge. Some crop classes have names that include other crop classes, for example \textit{Developed} and \textit{Developed/Low  Intensity} or \textit{Developed/Open Space}. The \textit{grep} function verifies for elements in a set, but only as substrings of strings. This function does not verify for a perfect string match. Using a few \textit{if} statements and the \textit{debug/browser} functions we complete the task. The resulting function is applied to the existing data and it creates a list of yearly data, each element containing crop classes and proportion of cultivated land in each class. The data is then combined into a final product dataframe. \\
+So we decide to write a function that verifies the matching between the existing classes in a year data and the set of all classes, using regular expressions. In particular, we use the \textit{grep} and \textit{identical} functions. The idea turns out to be the final product idea, however there is one more challenge. Some crop classes have names that include other crop classes, for example \textit{Developed} and \textit{Developed/Low  Intensity} or \textit{Developed/Open Space}. The \textit{grep} function verifies for elements in a set, but only as substrings of strings. This function does not verify for a perfect string match. Using a few \textit{if} statements and the \textit{debug/browser} functions we complete the task. The resulting function is applied to the existing data and it creates a list of yearly data, each element containing crop classes and proportion of cultivated land in each class. The data is then combined into a final product dataframe. \\
 
 \textit{Note:} Ideally, we would have preferred using the \textit{plyr} package to complete this task, by assigning a function to each element in a list and obtain a dataframe (i.e \textit{dlply} function), however the number of crop classes differs by year (elements in the list have different sizes) and a dataframe can not have columns of different sizes. We would further investigate if there are functions to handle these challenges.
 
@@ -653,7 +653,7 @@ There seem to be missing records in 2004 and 2006 due to clouds and to undefined
 We notice significant changes in some important crops over the years, for example corn and soybeans. The corn proportion of land is low in 2004 and 2005, while the soybean proportion of land is low in all but 2003, even missing in 2007. This trend would affect the analysis because the frame was designed in 2003 and we see greater changes in the follwoing years, when the data was collected. Some points seem to have changes classes.\\
 
 
-We have successfully worked with big data in different formats (.tif, web, coordinates in different measurement system, text and general expressions use) and developed tools to manipulate and extract useful infromation out of it. The next step is to utilize the tools constructed in this project to analyze changes in the real CEAP data. We would also like to investigate the CDL data as possible source of covariates in CEAP small area models. Another possible extension of this work with be the implementation of a web application, such as shiny. This would allow the users to better interact with CEAP data from yearly surveys, from different regions across United States.
+We have successfully worked with big data in different formats (.tif, web, coordinates in different measurement system, text and general expressions use) and developed tools to manipulate and extract useful information out of it. The next step is to utilize the tools constructed in this project to analyze changes in the real CEAP data. We would also like to investigate the CDL data as possible source of covariates in CEAP small area models. Another possible extension of this work with be the implementation of a web application, such as shiny. This would allow the users to better interact with CEAP data from yearly surveys, from different regions across United States.
 
 \section{Final note}
 
