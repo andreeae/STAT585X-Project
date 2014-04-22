@@ -1,0 +1,517 @@
+%% LyX 2.0.6 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[10pt]{beamer}
+\usepackage[T1]{fontenc}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+\usepackage{url}
+\ifx\hypersetup\undefined
+  \AtBeginDocument{%
+    \hypersetup{unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,
+ breaklinks=false,pdfborder={0 0 0},backref=false,colorlinks=false}
+  }
+\else
+  \hypersetup{unicode=true,pdfusetitle,
+ bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,
+ breaklinks=false,pdfborder={0 0 0},backref=false,colorlinks=false}
+\fi
+\usepackage{breakurl}
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+\providecommand{\LyX}{\texorpdfstring%
+  {L\kern-.1667em\lower.25em\hbox{Y}\kern-.125emX\@}
+  {LyX}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+ % this default might be overridden by plain title style
+ \newcommand\makebeamertitle{\frame{\maketitle}}%
+ \AtBeginDocument{
+   \let\origtableofcontents=\tableofcontents
+   \def\tableofcontents{\@ifnextchar[{\origtableofcontents}{\gobbletableofcontents}}
+   \def\gobbletableofcontents#1{\origtableofcontents}
+ }
+ \def\lyxframeend{} % In case there is a superfluous frame end
+ \long\def\lyxframe#1{\@lyxframe#1\@lyxframestop}%
+ \def\@lyxframe{\@ifnextchar<{\@@lyxframe}{\@@lyxframe<*>}}%
+ \def\@@lyxframe<#1>{\@ifnextchar[{\@@@lyxframe<#1>}{\@@@lyxframe<#1>[]}}
+ \def\@@@lyxframe<#1>[{\@ifnextchar<{\@@@@@lyxframe<#1>[}{\@@@@lyxframe<#1>[<*>][}}
+ \def\@@@@@lyxframe<#1>[#2]{\@ifnextchar[{\@@@@lyxframe<#1>[#2]}{\@@@@lyxframe<#1>[#2][]}}
+ \long\def\@@@@lyxframe<#1>[#2][#3]#4\@lyxframestop#5\lyxframeend{%
+   \frame<#1>[#2][#3]{\frametitle{#4}#5}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usetheme{PaloAlto}
+%\usecolortheme{default}
+\makeatother
+
+\begin{document}
+
+<<setup, include=FALSE>>=
+library(knitr)
+opts_chunk$set(fig.path='figure/beamer-',fig.align='center',fig.show='hold',size='footnotesize')
+
+library(ggplot2)
+library(maps)
+library(ggmap)
+library(plyr)
+library(raster)
+library(maptools)
+library(XML)
+@
+
+
+\title[Changes in cultivated cropland land in Iowa]{STAT 585X - Final Project  \\ Changes in cultivated cropland in CEAP}
+
+
+\author{Andreea L. Erciulescu%
+%\thanks{I thank Richard E. Goldberg for providing this demo.%}
+}
+
+\makebeamertitle
+\lyxframeend{}\section{NRI - CEAP}
+
+
+\lyxframeend{}\lyxframe{National Resources Inventory (NRI)}
+
+\begin{itemize}
+\item annual survey conducted collaboratively by USDA NRCS (Natural
+Resources Conservation Services) and ISU Center for Survey Statistics and Methodology (CSSM)
+\item to
+provide status and trend estimates for natural resources on nonfederal lands in US
+  \begin{itemize}
+  \item Example of such estimates are soil erosion estimates in relation to land characteristics and programs.
+  \end{itemize}
+\end{itemize}
+
+\lyxframeend{}
+%---------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{Conservation Effects Assessment Project (CEAP)}
+
+\begin{itemize}
+\item series of surveys intended to quantify environmental
+effects of conservation prctices and programs by hydrologic unit codes (HUCs)
+\item CEAP sample is a subset of the NRI points classified as cultivated cropland
+    \begin {itemize}
+    \item Farmer interviews about on-farm practices  
+    \item Hydrologic, climate and soil databases
+		\item APEX model
+    \end{itemize}
+\end{itemize}
+\lyxframeend{}
+
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{United States territory divion into HUCs}
+Local concerns regarding the existance of nitrates in drinking water, particularly in Des Moines
+
+\begin{center}
+\includegraphics[width=10cm, height=5cm]{images/HUC2-4-8.jpg} 
+\end{center}
+\lyxframeend{}\section{Data}
+
+%--------------------------------------------------------------------------------------------------
+\lyxframeend{}\lyxframe{Publicly available data}
+
+\includegraphics[width=3cm, height=2cm]{images/CDL.jpg} 
+\includegraphics[width=3cm, height=2.5cm]{images/CDLcodes.jpg}
+\includegraphics[width=3cm, height=2.5cm]{images/census.jpg}
+
+\\
+
+\includegraphics[width=3cm, height=2.5cm]{images/PLSS.jpg}
+\includegraphics[width=3cm, height=2.5cm]{images/gis.jpg}
+\includegraphics[width=3cm, height=2cm]{images/atlas.jpg}
+
+\lyxframeend{}
+
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{ Crop Data Layer (CDL)   \includegraphics[width=2cm, height=1.2cm]{images/CDL.jpg} }
+
+
+
+\begin{itemize}
+
+\item Tagged Image File (.tif) Format
+\item pixel counts for different categories of cropland - codes
+
+\includegraphics[width=3cm, height=2cm]{images/sourcecodes.jpg}
+
+\item download Iowa and years 2003-2007, approx. 750,000 KB 
+\end{itemize}
+
+\lyxframeend{}
+
+%--------------------------------------------------------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Processing CDL data}
+
+\begin{itemize}
+\item \textit{Raster} package in \textit{R}, S4 methods
+\item coordinate reference system (CRS)
+\end{itemize}
+
+<<cdl,message=FALSE>>=
+cdl.ia03 <- raster("data/cdl/CDL_2003_19.tif")
+cdl.ia04 <- raster("data/cdl/CDL_2004_19.tif")
+cdl.ia05 <- raster("data/cdl/CDL_2005_19.tif")
+cdl.ia06 <- raster("data/cdl/CDL_2006_19.tif")
+cdl.ia07 <- raster("data/cdl/CDL_2007_19.tif")
+cdl.ia03
+@
+
+\end{frame}
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{ GIS, PLSS, AtlasHCB}
+
+\begin{itemize}
+
+\item smaller dimensions (except for PLSS)
+\item polygons information, shapefiles
+\item different territory coverages, not applicable for our problem
+
+  \begin{itemize}
+
+  \item GIS: full river basin, universal transverse mercador (UTM) format
+  \item PLSS: state and county level, no hydrologic level
+  \item AtlasHCB: historical records, county level
+  \end{itemize}
+  
+\item \textit{maptools} in \textit{R}
+
+\end{itemize}
+
+\lyxframeend{}
+
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{Census Tigerweb}
+
+\begin{itemize}
+
+\item big data, storage not a problem because web scrapping
+\item national, regional and hydrologic levels 
+\item extract Iowa and Des Moines River data from hydrologic data
+  
+\end{itemize}
+
+\lyxframeend{}
+
+%--------------------------------------------------------------------------------------------------
+
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{Processing Census Tigerweb}
+
+\begin{itemize}
+
+\item \textit{XML} library in \textit{R}
+\item pull point coordinates for Iowa and for Des Moines river
+  
+\end{itemize}\section{CEAP sample}
+
+
+<<census,cache=TRUE, warning=FALSE, message=FALSE, echo=FALSE,fig.width=5,fig.height=4>>=
+
+###pull the iowa census data from the web
+src ="http://tigerweb.geo.census.gov/tigerwebmain/Files/tigerweb_acs13_tract_ia.html"
+tables <- readHTMLTable(src)
+tigeria <- tables[[1]]
+
+###transform the data to the desired format
+
+##first we need to pull the coordinates
+dsmriv <- tigeria
+poly.coords.ia <- as.data.frame(dsmriv[,c("INTPTLAT","INTPTLON")])
+row.names(poly.coords.ia) <- NULL
+names(poly.coords.ia) <- c("x","y")
+
+poly.coords.ia[,1] <- as.numeric(as.vector(poly.coords.ia[,1]))
+poly.coords.ia[,2] <- as.numeric(as.vector(poly.coords.ia[,2]))
+
+###pull the hydrologic iowa data from the web
+
+src ="http://tigerweb.geo.census.gov/tigerwebmain/Files/tigerweb_tab10_hydro_poly_ia.html"
+tables <- readHTMLTable(src)
+tigeria <- tables[[1]]
+
+### transform the data to the desired format and pull the information of interest
+tigeria$NAME <- as.character(tigeria$NAME)
+
+## pull the des moines river data 
+dsmriv <- tigeria[tigeria$NAME == "Des Moines Riv",]
+
+poly.coords <- as.data.frame(dsmriv[,c("INTPTLAT","INTPTLON")])
+row.names(poly.coords) <- NULL
+names(poly.coords) <- c("x","y")
+
+poly.coords[,1] <- as.numeric(as.vector(poly.coords[,1]))
+poly.coords[,2] <- as.numeric(as.vector(poly.coords[,2]))
+
+qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
+  geom_point(data=poly.coords.ia , 
+             mapping=aes(x=y, y=x), size=2) +
+  geom_point(data=poly.coords, 
+             mapping=aes(x=y, y=x), size=2,color="red") 
+@
+
+\lyxframeend{}
+
+
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{Constructing the sample for the Des Moines river watershed}
+
+\begin{itemize}
+
+\item add noise to each point using \textit{jitter} to mimic CEAP sample
+\item \textit{plyr} package
+  
+\end{itemize}
+<<censusdsmregion,cache=TRUE, warning=FALSE, message=FALSE,fig.width=5,fig.height=4,echo=FALSE>>=
+
+## create a region of interest around the des moines river
+
+set.seed(2013)
+add.poly.coords <- as.data.frame(t(ldply(llply(poly.coords,function(x) {
+                  ldply(x,function(y) jitter(rep(y,7),0.075))}),unlist)[,-1]))
+names(add.poly.coords) <- c("x","y")
+
+qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
+  geom_point(data=poly.coords.ia , 
+             mapping=aes(x=y, y=x), size=2) +
+  geom_point(data=poly.coords, 
+             mapping=aes(x=y, y=x), size=2,color="red")+
+  geom_point(data=add.poly.coords, 
+             mapping=aes(x=y, y=x), size=2,color="green") 
+d = nrow(add.poly.coords)
+@
+
+
+\lyxframeend{}
+
+
+
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{Extract CDL data for the region}
+
+\begin{itemize}
+
+\item \textit{cellFromXY} function to extract the pixel count information from CDL
+\item 224 points, crop codes 
+\item web scrape code/class data from NASS website
+\item merge codes and classes
+\end{itemize}
+
+\lyxframeend{}\section{Crop codes/classes}
+
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{The \textit{CODES} challenge}
+
+\begin{itemize}
+\item unstructured source code
+
+\includegraphics[width=4cm, height=2.5cm]{images/sourcecodes.jpg}
+\includegraphics[width=4cm, height=2.5cm]{images/sourcecode.jpg}
+
+\item list of unequal length elements
+
+<<CRSdata,cache=TRUE, warning=FALSE, message=FALSE,echo=FALSE>>=
+
+# get the coordinates in CRS
+loc.newcoords <- project(cbind(add.poly.coords[,2],add.poly.coords[,1]), proj = "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs")
+
+# gets the values of the pixels
+cdl.pts3 <- cdl.ia03[cellFromXY(cdl.ia03, loc.newcoords)]
+cdl.pts4 <- cdl.ia04[cellFromXY(cdl.ia04, loc.newcoords)]
+cdl.pts5 <- cdl.ia05[cellFromXY(cdl.ia05, loc.newcoords)]
+cdl.pts6 <- cdl.ia06[cellFromXY(cdl.ia06, loc.newcoords)]
+cdl.pts7 <- cdl.ia07[cellFromXY(cdl.ia07, loc.newcoords)]
+
+src ="http://www.nass.usda.gov/research/Cropland/docs/CDL_2013_crosswalk.htm"
+tables <- readHTMLTable(src)
+codes <- tables[[1]]
+
+##keep only the codes/classes information
+codes <- as.data.frame(codes[-c(1:9,266:316),1:2])
+names(codes) <-  c("code","class")
+codes[,"class"] <- as.character(codes[,"class"])
+
+##function to merge the points and the codes datasets, by the commun codes
+merging <- function(x){
+pts <- as.data.frame(x[-which(is.na(x))])
+names(pts) <- "code"
+join(codes, pts, by="code") -> res
+res[match(pts[,"code"],res[,"code"]),] -> res2
+return (table(res2[,"class"])/ nrow(pts) *100)
+}
+
+pts37 <- as.data.frame(cbind(cdl.pts3, cdl.pts4, cdl.pts5,cdl.pts6, cdl.pts7))
+
+d <- apply(pts37,2,merging)   ###or alply
+
+d2 <- laply(d,length) ###different sizes
+
+allcrops <- unlist(llply(d, function(x) names(x)))
+cropmaxno <- length(unique(allcrops))
+@
+
+\begin{table}[h!]
+\scriptsize
+\begin{center}
+\begin{tabular}{cccccc}
+\hline
+Total  & 2003 & 2004 & 2005 & 2006 & 2007 \\ 
+\hline
+\Sexpr{cropmaxno} &  \Sexpr{d2[1]} & \Sexpr{d2[2]}& \Sexpr{d2[3]}&\Sexpr{d2[4]} & \Sexpr{d2[5]}\\ 
+\hline
+\end{tabular}
+\caption{Number of crop classes by year} 
+\end{center}
+\end{table}
+
+\item similar crop classes, \textit{Developed} and \textit{Developed/Low Intensity} or \textit{Developed/Open Space}
+\end{itemize}
+
+\lyxframeend{}\section{Results}
+
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{Results}
+
+<<fxncodes,cache=TRUE, warning=FALSE, message=FALSE,echo=FALSE, echo=FALSE>>=
+fxn <- function(data) {
+
+  #  browser()
+  for (x in 1:length(data)) {
+    for (i in 1:cropmaxno){
+      
+      cnt <- 0
+      subset = grep(unique(allcrops)[i],names(data[[x]]))
+      len = length(subset)
+      
+      if (len<1){
+       data[[x]] <- c(data[[x]], NA)
+       names(data[[x]])[length(data[[x]])] <- unique(allcrops)[i]
+      }  
+        
+      if (len>=1)  
+        for (j in 1: len)
+          if(!identical(unique(allcrops)[i],names(data[[x]])[[subset[j]]]))
+              cnt <- cnt+1
+
+      if (cnt>=1){
+        data[[x]] <- c(data[[x]], NA)
+        names(data[[x]])[length(data[[x]])] <- unique(allcrops)[i]
+      }    
+    }
+    
+  }
+return(data)
+}
+
+fxn(d) -> newd
+
+#debug(fxn(d))
+
+## now combine all the years cdl.pts into one data frame
+
+d <- as.data.frame(newd)
+@
+
+
+\begin{table}[h!]
+\tiny
+\begin{center}
+\begin{tabular}{lccccc}
+\hline
+Crop Code & 2003 & 2004 & 2005 & 2006 & 2007 \\ 
+\hline
+Alfalfa &  \Sexpr{d[1,1]} & \Sexpr{d[1,2]}& \Sexpr{d[1,3]}&\Sexpr{d[1,4]} & \Sexpr{d[1,5]}\\ 
+Corn &  \Sexpr{d[2,1]}  & \Sexpr{d[2,2]} & \Sexpr{d[2,3]} & \Sexpr{d[2,4]} & \Sexpr{d[2,5]}\\ 
+Developed & \Sexpr{d[3,1]}  & \Sexpr{d[3,2]} & \Sexpr{d[3,3]} & \Sexpr{d[3,4]}& \Sexpr{d[3,5]} \\ 
+Fallow/Idle Cropland   & \Sexpr{d[4,1]}  & \Sexpr{d[4,2]} & \Sexpr{d[4,3]} & \Sexpr{d[4,4]} & \Sexpr{d[4,5]}\\ 
+Forest  &  \Sexpr{d[5,1]}  & \Sexpr{d[5,2]} & \Sexpr{d[5,3]} & \Sexpr{d[5,4]} & \Sexpr{d[5,5]}\\ 
+Grass/Pasture   &   \Sexpr{d[6,1]}  & \Sexpr{d[6,2]} & \Sexpr{d[6,3]} & \Sexpr{d[6,4]}& \Sexpr{d[6,5]} \\ 
+Oats &  \Sexpr{d[7,1]}  & \Sexpr{d[7,2]} & \Sexpr{d[7,3]} & \Sexpr{d[7,4]} & \Sexpr{d[7,5]} \\ 
+Other Small  Grains &  \Sexpr{d[8,1]}  & \Sexpr{d[8,2]} & \Sexpr{d[8,3]} & \Sexpr{d[8,4]} & \Sexpr{d[8,5]} \\ 
+
+Soybeans &  \Sexpr{d[9,1]} & \Sexpr{d[9,2]}& \Sexpr{d[9,3]}&\Sexpr{d[9,4]} & \Sexpr{d[9,5]}\\ 
+Water &  \Sexpr{d[10,1]}  & \Sexpr{d[10,2]} & \Sexpr{d[10,3]} & \Sexpr{d[10,4]} & \Sexpr{d[10,5]}\\ 
+Christmas Trees & \Sexpr{d[11,1]}  & \Sexpr{d[11,2]} & \Sexpr{d[11,3]} & \Sexpr{d[11,4]}& \Sexpr{d[11,5]} \\ 
+Clouds/No Data  & \Sexpr{d[12,1]}  & \Sexpr{d[12,2]} & \Sexpr{d[12,3]} & \Sexpr{d[12,4]} & \Sexpr{d[12,5]}\\ 
+Nonag/Undefined  &  \Sexpr{d[13,1]}  & \Sexpr{d[13,2]} & \Sexpr{d[13,3]} & \Sexpr{d[13,4]} & \Sexpr{d[13,5]}\\ 
+Other Crops  &   \Sexpr{d[14,1]}  & \Sexpr{d[14,2]} & \Sexpr{d[14,3]} & \Sexpr{d[14,4]}& \Sexpr{d[14,5]} \\ 
+Deciduous Forest &  \Sexpr{d[15,1]}  & \Sexpr{d[15,2]} & \Sexpr{d[15,3]} & \Sexpr{d[15,4]} & \Sexpr{d[15,5]} \\ 
+Developed/Low  Intensity &  \Sexpr{d[16,1]}  & \Sexpr{d[16,2]} & \Sexpr{d[16,3]} & \Sexpr{d[16,4]} & \Sexpr{d[16,5]} \\ 
+
+Developed/Open Space  &  \Sexpr{d[17,1]}  & \Sexpr{d[17,2]} & \Sexpr{d[17,3]} & \Sexpr{d[17,4]} & \Sexpr{d[17,5]}\\ 
+Herbaceous  Wetlands  &   \Sexpr{d[18,1]}  & \Sexpr{d[18,2]} & \Sexpr{d[18,3]} & \Sexpr{d[18,4]}& \Sexpr{d[18,5]} \\ 
+Mixed Forest &  \Sexpr{d[19,1]}  & \Sexpr{d[19,2]} & \Sexpr{d[19,3]} & \Sexpr{d[19,4]} & \Sexpr{d[19,5]} \\ 
+Open Water &  \Sexpr{d[20,1]}  & \Sexpr{d[20,2]} & \Sexpr{d[20,3]} & \Sexpr{d[20,4]} & \Sexpr{d[20,5]} \\ 
+Woody Wetlands &  \Sexpr{d[21,1]}  & \Sexpr{d[21,2]} & \Sexpr{d[21,3]} & \Sexpr{d[21,4]} & \Sexpr{d[21,5]} \\ 
+
+\hline
+\end{tabular}
+\caption{Proportion of land by crop class, by year.} 
+\end{center}
+\end{table}
+
+
+\lyxframeend{}\section{Conclusions}
+
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{Conclusions}
+
+\textit{The following conclusions hold only for the region we have described in the previous section. Whether they still hold for the real CEAP data needs future investigation. }
+
+\begin{itemize}
+\item big data
+\item coordinates in different measurement system
+\item missing crop classes for all/some the years
+\item significant propotions of missing records in 2004 and 2006 due to clouds and to undefined records
+\item significant changes in some important crops over the years, for example corn and soybeans
+  \begin{itemize}
+
+  \item corn proportion of land is low in 2004 and 2005
+  \item soybean proportion of land is low in all years but 2003, missing in 2007
+  \item possible frame problem
+  \end{itemize}
+
+\end{itemize}
+
+
+\lyxframeend{}
+
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{Future work}
+
+\begin{itemize}
+\item analyze changes in the real CEAP data
+\item investigate CDL data as source of covariates in CEAP small area models
+\item shiny app
+\end{itemize}
+
+
+\lyxframeend{}
+
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{The end...}
+
+Thank you for your attention!
+
+\lyxframeend{}
+
+\end{document}
+
+

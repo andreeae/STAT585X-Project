@@ -433,7 +433,7 @@ cdl.pts7 <- cdl.ia07[cellFromXY(cdl.ia07, loc.newcoords)]
 table(cdl.pts7)/length(cdl.pts7[-which(is.na(cdl.pts7))])*100
 @
 
-However, we would like to present the results in a nicer way, displaying the crop classes corresponding the codes, in order to better understand the changes over this time period. For this, we pull the codes and classes data from the NASS website. These HTML data need more cleaning because there are multiple tables on the page, as well as paragraphs of text. We only need the table containg the codes and the associated classes so we need to filter out some rows and columns from the table pulled using the \textit{readHTMLTable} function.One way of doing this is simply exclude the rows and the columns that are not of interest. Another, more elegant, way of accomplishing this task is to navigate on the source page and use the \textit{XML} root and childern information. However, the source code is not in a compact format, the objects are not uniquely identifiable (there are no options, no values and such). So we can not track the path to the only one table of interest and we use the first method, of simply excluding some rows and columns. We save the data into a dataframe, containg two columns, one column of codes and one column of classes, and we give the appropriate names. \\
+However, we would like to present the results in a nicer way, displaying the crop classes corresponding the codes, in order to better understand the changes over this time period. For this, we pull the codes and classes data from the NASS website. These HTML data need more cleaning because there are multiple tables on the page, as well as paragraphs of text. We only need the table containg the codes and the associated classes so we need to filter out some rows and columns from the table pulled using the \textit{readHTMLTable} function.One way of doing this is simply exclude the rows and the columns that are not of interest. Another, more elegant, way of accomplishing this task is to navigate on the source page and use the \textit{XML} root and childern information. However, the source code is not in a compact format, the objects are not uniquely identifiable (there are no options, no values and such). So we can not track the path to the only one table of interest and we use decide to simply exclude some rows and columns. We save the data into a dataframe, containg two columns, one column of codes and one column of classes, and we give the appropriate names. \\
 
 Next, we merge the codes and classes dataset with the yearly CDL point datasets, saving only the proportion of points in each code. We start by writing a general function to complete this task but, using the \textit{debug/browser} functions in \textit{R} we are able to identify challenges as we continue coding.
 
@@ -661,7 +661,7 @@ This work is completed under the theme of reproducible research and we have crea
 
 This report is available in my current GitHub repository, \url{https://github.com/andreeae/STAT585X-Project}, under \textit{FinalReport.Rnw}. The .pdf and the data are available upon request, as it can not be updated due to large size.
 
-\section{References:}
+\section{References}
 \begin{enumerate}
 
 \item Hijmans, R. (2014), ''Package `plyr','' \textit{http://cran.r-project.org/web/packages/plyr/plyr.pdf}
