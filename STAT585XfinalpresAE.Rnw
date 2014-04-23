@@ -156,11 +156,11 @@ Local concerns regarding the existance of nitrates in drinking water, particular
 \end{itemize}
 
 <<cdl,message=FALSE>>=
-cdl.ia03 <- raster("data/cdl/CDL_2003_19.tif")
-cdl.ia04 <- raster("data/cdl/CDL_2004_19.tif")
-cdl.ia05 <- raster("data/cdl/CDL_2005_19.tif")
-cdl.ia06 <- raster("data/cdl/CDL_2006_19.tif")
-cdl.ia07 <- raster("data/cdl/CDL_2007_19.tif")
+cdl.ia03 <- raster("data/CDL_2003_19.tif")
+cdl.ia04 <- raster("data/CDL_2004_19.tif")
+cdl.ia05 <- raster("data/CDL_2005_19.tif")
+cdl.ia06 <- raster("data/CDL_2006_19.tif")
+cdl.ia07 <- raster("data/CDL_2007_19.tif")
 cdl.ia03
 @
 
@@ -216,7 +216,7 @@ cdl.ia03
 \end{itemize}\section{CEAP sample}
 
 
-<<census,cache=TRUE, warning=FALSE, message=FALSE, echo=FALSE,fig.width=5,fig.height=4>>=
+<<census,cache=TRUE,warning=FALSE, message=FALSE, echo=FALSE,fig.width=5,fig.height=4>>=
 
 ###pull the iowa census data from the web
 src ="http://tigerweb.geo.census.gov/tigerwebmain/Files/tigerweb_acs13_tract_ia.html"
@@ -273,7 +273,7 @@ qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
 \item \textit{plyr} package
   
 \end{itemize}
-<<censusdsmregion,cache=TRUE, warning=FALSE, message=FALSE,fig.width=5,fig.height=4,echo=FALSE>>=
+<<censusdsmregion, warning=FALSE, message=FALSE,fig.width=5,fig.height=4,echo=FALSE>>=
 
 ## create a region of interest around the des moines river
 
@@ -323,7 +323,7 @@ d = nrow(add.poly.coords)
 
 \item list of unequal length elements
 
-<<CRSdata,cache=TRUE, warning=FALSE, message=FALSE,echo=FALSE>>=
+<<CRSdata,warning=FALSE, message=FALSE,echo=FALSE>>=
 
 # get the coordinates in CRS
 loc.newcoords <- project(cbind(add.poly.coords[,2],add.poly.coords[,1]), proj = "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs")
@@ -386,7 +386,7 @@ Total  & 2003 & 2004 & 2005 & 2006 & 2007 \\
 
 \lyxframeend{}\lyxframe{Results}
 
-<<fxncodes,cache=TRUE, warning=FALSE, message=FALSE,echo=FALSE, echo=FALSE>>=
+<<fxncodes,warning=FALSE, message=FALSE,echo=FALSE, echo=FALSE>>=
 fxn <- function(data) {
 
   #  browser()

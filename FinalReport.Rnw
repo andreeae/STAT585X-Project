@@ -15,7 +15,8 @@
 \usepackage{breakurl}
 \begin{document}
 
-<<setup, include=FALSE, cache=FALSE, tidy=FALSE>>=
+
+<<setup, include=FALSE,tidy=FALSE>>=
   # set global chunk options
   opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
 options(replace.assign=TRUE,width=90)
@@ -105,23 +106,23 @@ We first download the data for years 2003-2007 from the website, following these
 \begin{enumerate}
 \item Open this link in an internet browser: \url{http://nassgeodata.gmu.edu/CropScape/}. We now have the United States map and some tabs on the left and at the top of the map;
 \item Click on the \textit{US map -like} tab at the top, hoovering over it says \textit{Define Area of Interest by Region/State/ASD/County}, select \textit{State} as the \textit{Level} and \textit{Iowa} as the \textit{state}. Click \textit{Submit};
-\item Select the years of interest (in this case 2003-2007), one by one and download the data. These file are large, so downloading them takes long time. 
+\item Select the years of interest (in this case 2003-2007) and download the data. The file is large, so downloading it takes long time. 
 \end{enumerate}
 
-At the end of the downloading process, we have five .tif files, one for each year of interest. These are raster graphics images, spatial data structures that divide the US teritory into pixels that store crop information. This type of data is referred to as a 'grid,' contrasted with 'vector' data that is used to represent points, lines, polygons. The dimensions of the files are large, about 200,000 KB each for the 2003-2005 data and about 60,000 KB each for the 2006-2007 data.\\
+At the end of the downloading process, we unzip the file and we have five .tif files, one for each year of interest. These are raster graphics images, spatial data structures that divide the US teritory into pixels that store crop information. This type of data is referred to as a 'grid,' contrasted with 'vector' data that is used to represent points, lines, polygons. The dimensions of the files are large, about 200,000 KB each for the 2003-2005 data and about 60,000 KB each for the 2006-2007 data.\\
 
 \textit{Note:} The first and greatest challenge in this section was storing the CDL data. We run our of memory on the working drive (U drive) and had to consider document reallocation on web storage clouds. \\
 
 An useful R package to read and manipulate the CDL data is the \textit{Raster} package, implemented using S4 methods. This package allows us to read the raster values from the files and to convert the cell numbers to coordinates and back. \\
 
-<<cdl,cache=FALSE, message=FALSE,warning=FALSE>>=
+<<cdl, message=FALSE,warning=FALSE>>=
 
 ##read the data
-cdl.ia03 <- raster("data/cdl/CDL_2003_19.tif")
-cdl.ia04 <- raster("data/cdl/CDL_2004_19.tif")
-cdl.ia05 <- raster("data/cdl/CDL_2005_19.tif")
-cdl.ia06 <- raster("data/cdl/CDL_2006_19.tif")
-cdl.ia07 <- raster("data/cdl/CDL_2007_19.tif")
+cdl.ia03 <- raster("data/CDL_2003_19.tif")
+cdl.ia04 <- raster("data/CDL_2004_19.tif")
+cdl.ia05 <- raster("data/CDL_2005_19.tif")
+cdl.ia06 <- raster("data/CDL_2006_19.tif")
+cdl.ia07 <- raster("data/CDL_2007_19.tif")
 
 cdl.ia03
 @
@@ -180,7 +181,7 @@ qplot(x,y,data=loc.newcoords, geom="polygon")
 
 # gets the values of the pixels
 
-cdl.ia13 <- raster("data/cdl/CDL_2013_19.tif")
+cdl.ia13 <- raster("data/CDL_2013_19.tif")
 cdl.pts <- cdl.ia03[cellFromXY(cdl.ia03, loc.newcoords)]
 table(cdl.pts)  ##gives NAs
 
@@ -203,7 +204,7 @@ polys <-xxx@polygons
 
 length(polys@Polygons)
 
-xx <- readShapeSpatial("data/cdl/IAcdl.shp")
+xx <- readShapeSpatial("data/IAcdl.shp")
 xxx <- thinnedSpatialPoly(as(xx,"SpatialPolygons"),
                           tolerance = 0.1, minarea = 0.001, topologyPreserve = T)
 class(xxx)
@@ -290,7 +291,7 @@ extractPolygons <- function(xxx){
 oz <- extractPolygons(xxx)
 qplot(x,y,  order=order, group=group, data=oz, geom="polygon")
 
-ia <- extractPolygons(readShapeSpatial("data/cdl/IAcdl.shp"))
+ia <- extractPolygons(readShapeSpatial("data/IAcdl.shp"))
 qplot(x, y,  order=order, group=group, data=ia, geom="polygon")
 
 dat <- xx@data
@@ -310,7 +311,7 @@ table(cdl.pts)/length(cdl.pts[-which(is.na(cdl.pts))])*100
 
 We pull both the Iowa data and the Des Moines River data from the web using the \textit{XML} library in R. The Iowa data is used to extract the point coordinates and construct a map. First, we pull the point coordinates for the available points and save them in a dataframe containing the numeric values. We use the \textit{ggplot2} library in R to construct a plot of the data and the \textit{maps} and \textit{ggmap} libraries to construct a map of the data. These visualisations serve as both a nice representation of the data and as a verification that we are working with the desired region. We constructed maps using both \textit{qplot} and \textit{qmap} functions but we only present the google maps.\\ 
 
-<<census,cache=TRUE, warning=FALSE, message=FALSE>>=
+<<census, cache=TRUE, warning=FALSE, message=FALSE>>=
 
 ###pull the iowa census data from the web
 src ="http://tigerweb.geo.census.gov/tigerwebmain/Files/tigerweb_acs13_tract_ia.html"
@@ -341,7 +342,7 @@ qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
 
 The data for the Des Moines River is extracted from the full dataframe on the hydrologic levels in Iowa. Again, we construct a dataframe with numeric values for the point coordinates and we overlay this data on the previous map. \\
 
-<<censusdsm,cache=TRUE, warning=FALSE, message=FALSE>>=
+<<censusdsm, cache=TRUE,warning=FALSE, message=FALSE>>=
 
 ###pull the hydrologic iowa data from the web
 
@@ -382,7 +383,7 @@ qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
 
 The next challenge is to mimic the CEAP sample. The Des Moines River data contains points only on the river, but not on the entire watershed. We are using the \textit{plyr} package in R to expand this sample of points, in order to capture the region along the river. The approach we decide to use is to add noise to each of the existing points, using the \textit{jitter} function. Also, we create six more points in the nearest neighborhood of the existing points. A map of the final region is presented below.
 
-<<censusdsmregion,cache=TRUE, warning=FALSE, message=FALSE>>=
+<<censusdsmregion,warning=FALSE, message=FALSE>>=
 
 ## create a region of interest around the des moines river
 
@@ -408,7 +409,7 @@ d = nrow(add.poly.coords)
 Once we have the desired region and a fairly sizeable sample (a number of \Sexpr{d}), we extract the information from the CDL data. First, we create the matrix of point coordinates in coordinate reference system (CRS) using the attributes of the raster objects described previously. Next we use the \textit{cellFromXY} function to extract the pixel count information available in the CDL data for the points in the region, for each year of interest. The results are numeric vectors of size \Sexpr{d}, containing the crop codes for the points. We construct the proportions of crops, by category, by year and the results are in the code chunk below. 
 
 
-<<CRSdata,cache=TRUE, warning=FALSE, message=FALSE>>=
+<<CRSdata, warning=FALSE, message=FALSE>>=
 
 # get the coordinates in CRS
 loc.newcoords <- project(cbind(add.poly.coords[,2],add.poly.coords[,1]), proj = "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs")
@@ -438,7 +439,7 @@ However, we would like to present the results in a nicer way, displaying the cro
 Next, we merge the codes and classes dataset with the yearly CDL point datasets, saving only the proportion of points in each code. We start by writing a general function to complete this task but, using the \textit{debug/browser} functions in \textit{R} we are able to identify challenges as we continue coding.
 
 
-<<codes,warning=FALSE,message=FALSE>>=
+<<codes,cache=TRUE,warning=FALSE,message=FALSE>>=
 
 src ="http://www.nass.usda.gov/research/Cropland/docs/CDL_2013_crosswalk.htm"
 tables <- readHTMLTable(src)
