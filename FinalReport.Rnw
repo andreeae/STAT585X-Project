@@ -14,15 +14,26 @@
   pdfstartview={XYZ null null 1}}
 \usepackage{breakurl}
 \begin{document}
+%\SweaveOpts{concordance=TRUE}
 
 
-<<setup, include=FALSE,tidy=FALSE>>=
-  # set global chunk options
-  opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
+<<setup, include=FALSE, tidy=FALSE>>=
+
+##need to compile using knitr (change option under tools/options if you have sweave by default)
+
+#set global chunk options
+
+opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
 options(replace.assign=TRUE,width=90)
+
+##need to install the following packages, if you don't have them already
 
 #install.packages("ggplot2")
 #install.packages("raster")
+#install.packages("ggmap")
+#install.packages("raster")
+#install.packages("rgdal")
+#install.packages("XML")
 
 library(ggplot2)
 library(maps)
@@ -611,7 +622,7 @@ We present summaries for all the crop classes, by year in the following table.
 \begin{center}
 \begin{tabular}{lccccc}
 \hline
-Crop Code & 2003 & 2004 & 2005 & 2006 & 2007 \\ 
+Crop Class & 2003 & 2004 & 2005 & 2006 & 2007 \\ 
 \hline
 Alfalfa &  \Sexpr{d[1,1]} & \Sexpr{d[1,2]}& \Sexpr{d[1,3]}&\Sexpr{d[1,4]} & \Sexpr{d[1,5]}\\ 
 Corn &  \Sexpr{d[2,1]}  & \Sexpr{d[2,2]} & \Sexpr{d[2,3]} & \Sexpr{d[2,4]} & \Sexpr{d[2,5]}\\ 

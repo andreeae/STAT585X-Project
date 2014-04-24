@@ -432,7 +432,7 @@ d <- as.data.frame(newd)
 \begin{center}
 \begin{tabular}{lccccc}
 \hline
-Crop Code & 2003 & 2004 & 2005 & 2006 & 2007 \\ 
+Crop Class & 2003 & 2004 & 2005 & 2006 & 2007 \\ 
 \hline
 Alfalfa &  \Sexpr{d[1,1]} & \Sexpr{d[1,2]}& \Sexpr{d[1,3]}&\Sexpr{d[1,4]} & \Sexpr{d[1,5]}\\ 
 Corn &  \Sexpr{d[2,1]}  & \Sexpr{d[2,2]} & \Sexpr{d[2,3]} & \Sexpr{d[2,4]} & \Sexpr{d[2,5]}\\ 
