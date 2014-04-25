@@ -27,6 +27,7 @@ opts_chunk$set(fig.path='figure/minimal-', fig.align='center', fig.show='hold')
 options(replace.assign=TRUE,width=90)
 
 ##need to install the following packages, if you don't have them already
+##Linux users may need to install additional GDAL libraries in order to use the raster package
 
 #install.packages("ggplot2")
 #install.packages("raster")
@@ -392,7 +393,9 @@ qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
 @
 
 
-The next challenge is to mimic the CEAP sample. The Des Moines River data contains points only on the river, but not on the entire watershed. We are using the \textit{plyr} package in R to expand this sample of points, in order to capture the region along the river. The approach we decide to use is to add noise to each of the existing points, using the \textit{jitter} function. Also, we create six more points in the nearest neighborhood of the existing points. A map of the final region is presented below.
+The next challenge is to mimic the CEAP sample. The Des Moines River data contains points only on the river, but not on the entire watershed. We are using the \textit{plyr} package in R to expand this sample of points, in order to capture the region along the river. The approach we decide to use is to add noise to each of the existing points, using the \textit{jitter} function. Also, we create six more points in the nearest neighborhood of the existing points. A map of the final region is presented below.\\
+
+\textit{Note.} This approach of constructing a larger sample, including the Des Moines River sample points and some of the surrounding, may be questionable because it is not certain whether the resulting sample of points is a subset of the points in the CDL data. Further approaches are discussed in the \textit{Future work} section in this report. 
 
 <<censusdsmregion,warning=FALSE, message=FALSE>>=
 
@@ -415,12 +418,45 @@ qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
   geom_point(data=add.poly.coords, 
              mapping=aes(x=y, y=x), size=2,color="green") 
 d = nrow(add.poly.coords)
+d2 = nrow(poly.coords)
 @
 
-Once we have the desired region and a fairly sizeable sample (a number of \Sexpr{d}), we extract the information from the CDL data. First, we create the matrix of point coordinates in coordinate reference system (CRS) using the attributes of the raster objects described previously. Next we use the \textit{cellFromXY} function to extract the pixel count information available in the CDL data for the points in the region, for each year of interest. The results are numeric vectors of size \Sexpr{d}, containing the crop codes for the points. We construct the proportions of crops, by category, by year and the results are in the code chunk below. 
+Once we have the desired region and a fairly sizeable sample (a number of \Sexpr{d}), we extract the information from the CDL data. First, we create the matrix of point coordinates in coordinate reference system (CRS) using the attributes of the raster objects described previously. Next we use the \textit{cellFromXY} function to extract the pixel count information available in the CDL data for the points in the region, for each year of interest. The results are numeric vectors of size \Sexpr{d}, containing the crop codes for the points. We construct the proportions of crops, by category, by year and the results are in the code chunk below. \\
 
+First we consider the original sample of only \Sexpr{d2} points, representing the Des Moines River.
 
 <<CRSdata, warning=FALSE, message=FALSE>>=
+
+#consider first the Des Moines river only 
+
+# get the coordinates in CRS
+loc.newcoords <- project(cbind(poly.coords[,2],poly.coords[,1]), proj = "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs")
+
+# gets the values of the pixels
+cdl.pts3 <- cdl.ia03[cellFromXY(cdl.ia03, loc.newcoords)]
+table(cdl.pts3)/length(cdl.pts3[-which(is.na(cdl.pts3))])*100
+
+
+cdl.pts4 <- cdl.ia04[cellFromXY(cdl.ia04, loc.newcoords)]
+table(cdl.pts4)/length(cdl.pts4[-which(is.na(cdl.pts4))])*100
+
+cdl.pts5 <- cdl.ia05[cellFromXY(cdl.ia05, loc.newcoords)]
+table(cdl.pts5)/length(cdl.pts5[-which(is.na(cdl.pts5))])*100
+
+
+cdl.pts6 <- cdl.ia06[cellFromXY(cdl.ia06, loc.newcoords)]
+table(cdl.pts6)/length(cdl.pts6[-which(is.na(cdl.pts6))])*100
+
+
+cdl.pts7 <- cdl.ia07[cellFromXY(cdl.ia07, loc.newcoords)]
+table(cdl.pts7)/length(cdl.pts7[-which(is.na(cdl.pts7))])*100
+
+@
+
+Next, we consider the larger samples, created by adding the surrounding points to the Des Moines River sample points.
+
+<<CRSdata2, warning=FALSE, message=FALSE>>=
+#consider next the Des Moines river and the surrounding region 
 
 # get the coordinates in CRS
 loc.newcoords <- project(cbind(add.poly.coords[,2],add.poly.coords[,1]), proj = "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs")
@@ -445,7 +481,9 @@ cdl.pts7 <- cdl.ia07[cellFromXY(cdl.ia07, loc.newcoords)]
 table(cdl.pts7)/length(cdl.pts7[-which(is.na(cdl.pts7))])*100
 @
 
-However, we would like to present the results in a nicer way, displaying the crop classes corresponding the codes, in order to better understand the changes over this time period. For this, we pull the codes and classes data from the NASS website. These HTML data need more cleaning because there are multiple tables on the page, as well as paragraphs of text. We only need the table containg the codes and the associated classes so we need to filter out some rows and columns from the table pulled using the \textit{readHTMLTable} function.One way of doing this is simply exclude the rows and the columns that are not of interest. Another, more elegant, way of accomplishing this task is to navigate on the source page and use the \textit{XML} root and childern information. However, the source code is not in a compact format, the objects are not uniquely identifiable (there are no options, no values and such). So we can not track the path to the only one table of interest and we use decide to simply exclude some rows and columns. We save the data into a dataframe, containg two columns, one column of codes and one column of classes, and we give the appropriate names. \\
+Notice that by considering a larger sample of points, we successfully overlapped with the CDL points sample. That is, we are able to see changes in more than just the crop categories present in the Des Moines River Census sample.\\
+
+In the following part of this report we present the results in a nicer way, displaying the crop classes corresponding the codes, in order to better understand the changes over this time period. For this, we pull the codes and classes data from the NASS website. These HTML data need more cleaning because there are multiple tables on the page, as well as paragraphs of text. We only need the table containg the codes and the associated classes so we need to filter out some rows and columns from the table pulled using the \textit{readHTMLTable} function. One way of doing this is simply exclude the rows and the columns that are not of interest. Another, more elegant, way of accomplishing this task is to navigate on the source page and use the \textit{XML} root and childern information. However, the source code is not in a compact format, the objects are not uniquely identifiable (there are no options, no values and such). So we can not track the path to the only one table of interest and we use decide to simply exclude some rows and columns. We save the data into a dataframe, containg two columns, one column of codes and one column of classes, and we give the appropriate names. \\
 
 Next, we merge the codes and classes dataset with the yearly CDL point datasets, saving only the proportion of points in each code. We start by writing a general function to complete this task but, using the \textit{debug/browser} functions in \textit{R} we are able to identify challenges as we continue coding.
 
@@ -604,7 +642,8 @@ return(data)
 }
 
 fxn(d) -> newd
-
+mode(newd)
+newd
 #debug(fxn(d))
 
 laply(newd,length)  ###works!!!!! all years have same number of crop classes
@@ -612,11 +651,31 @@ laply(newd,length)  ###works!!!!! all years have same number of crop classes
 ## now combine all the years cdl.pts into one data frame
 
 d <- as.data.frame(newd)
+d
 @
+
+
+Notice that if we simply use the \textit{as.data.frame} function to convert a dataframe from the list of yearly crop proportions, the results do not match the correct crop classes. That is, the proportions for year 2003 match, but the the proportions for the following years are simply binded to the first year, columnwise, but without matching the crop classes. This is due to the construction of the list, we added the crop classes that were not observed in a year at the end of that year data, so the order in which the crop classes show up in each year is not the same for all years. Hence, before presenting the results, we need to do more work in cleaning the data.\\
+
+<<codes3,warning=FALSE,message=FALSE>>=
+newd2 <- newd
+# d <- as.data.frame(llply(newd2,function(x) {
+#                           y <- as.data.frame(x)
+#                           y <- y[order(row.names(y)),]}))
+# row.names(d) <- sort(row.names(as.data.frame(newd2[[1]])))
+
+d <- ldply(newd2,function(x) {
+                          y <- as.data.frame(x)
+                          y <- y[order(row.names(y)),]})
+d <- t(d[,-1])
+row.names(d) <- sort(unique(allcrops))
+d <- cbind(row.names(d),round(d,4))
+@
+
 
 \section{Results}
 
-We present summaries for all the crop classes, by year in the following table. 
+We present summaries for all the crop classes, by year in the Table 2. 
 
 \begin{table}[h!]
 \begin{center}
@@ -624,29 +683,27 @@ We present summaries for all the crop classes, by year in the following table.
 \hline
 Crop Class & 2003 & 2004 & 2005 & 2006 & 2007 \\ 
 \hline
-Alfalfa &  \Sexpr{d[1,1]} & \Sexpr{d[1,2]}& \Sexpr{d[1,3]}&\Sexpr{d[1,4]} & \Sexpr{d[1,5]}\\ 
-Corn &  \Sexpr{d[2,1]}  & \Sexpr{d[2,2]} & \Sexpr{d[2,3]} & \Sexpr{d[2,4]} & \Sexpr{d[2,5]}\\ 
-Developed & \Sexpr{d[3,1]}  & \Sexpr{d[3,2]} & \Sexpr{d[3,3]} & \Sexpr{d[3,4]}& \Sexpr{d[3,5]} \\ 
-Fallow/Idle Cropland   & \Sexpr{d[4,1]}  & \Sexpr{d[4,2]} & \Sexpr{d[4,3]} & \Sexpr{d[4,4]} & \Sexpr{d[4,5]}\\ 
-Forest  &  \Sexpr{d[5,1]}  & \Sexpr{d[5,2]} & \Sexpr{d[5,3]} & \Sexpr{d[5,4]} & \Sexpr{d[5,5]}\\ 
-Grass/Pasture   &   \Sexpr{d[6,1]}  & \Sexpr{d[6,2]} & \Sexpr{d[6,3]} & \Sexpr{d[6,4]}& \Sexpr{d[6,5]} \\ 
-Oats &  \Sexpr{d[7,1]}  & \Sexpr{d[7,2]} & \Sexpr{d[7,3]} & \Sexpr{d[7,4]} & \Sexpr{d[7,5]} \\ 
-Other Small  Grains &  \Sexpr{d[8,1]}  & \Sexpr{d[8,2]} & \Sexpr{d[8,3]} & \Sexpr{d[8,4]} & \Sexpr{d[8,5]} \\ 
-
-Soybeans &  \Sexpr{d[9,1]} & \Sexpr{d[9,2]}& \Sexpr{d[9,3]}&\Sexpr{d[9,4]} & \Sexpr{d[9,5]}\\ 
-Water &  \Sexpr{d[10,1]}  & \Sexpr{d[10,2]} & \Sexpr{d[10,3]} & \Sexpr{d[10,4]} & \Sexpr{d[10,5]}\\ 
-Christmas Trees & \Sexpr{d[11,1]}  & \Sexpr{d[11,2]} & \Sexpr{d[11,3]} & \Sexpr{d[11,4]}& \Sexpr{d[11,5]} \\ 
-Clouds/No Data  & \Sexpr{d[12,1]}  & \Sexpr{d[12,2]} & \Sexpr{d[12,3]} & \Sexpr{d[12,4]} & \Sexpr{d[12,5]}\\ 
-Nonag/Undefined  &  \Sexpr{d[13,1]}  & \Sexpr{d[13,2]} & \Sexpr{d[13,3]} & \Sexpr{d[13,4]} & \Sexpr{d[13,5]}\\ 
-Other Crops  &   \Sexpr{d[14,1]}  & \Sexpr{d[14,2]} & \Sexpr{d[14,3]} & \Sexpr{d[14,4]}& \Sexpr{d[14,5]} \\ 
-Deciduous Forest &  \Sexpr{d[15,1]}  & \Sexpr{d[15,2]} & \Sexpr{d[15,3]} & \Sexpr{d[15,4]} & \Sexpr{d[15,5]} \\ 
-Developed/Low  Intensity &  \Sexpr{d[16,1]}  & \Sexpr{d[16,2]} & \Sexpr{d[16,3]} & \Sexpr{d[16,4]} & \Sexpr{d[16,5]} \\ 
-
-Developed/Open Space  &  \Sexpr{d[17,1]}  & \Sexpr{d[17,2]} & \Sexpr{d[17,3]} & \Sexpr{d[17,4]} & \Sexpr{d[17,5]}\\ 
-Herbaceous  Wetlands  &   \Sexpr{d[18,1]}  & \Sexpr{d[18,2]} & \Sexpr{d[18,3]} & \Sexpr{d[18,4]}& \Sexpr{d[18,5]} \\ 
-Mixed Forest &  \Sexpr{d[19,1]}  & \Sexpr{d[19,2]} & \Sexpr{d[19,3]} & \Sexpr{d[19,4]} & \Sexpr{d[19,5]} \\ 
-Open Water &  \Sexpr{d[20,1]}  & \Sexpr{d[20,2]} & \Sexpr{d[20,3]} & \Sexpr{d[20,4]} & \Sexpr{d[20,5]} \\ 
-Woody Wetlands &  \Sexpr{d[21,1]}  & \Sexpr{d[21,2]} & \Sexpr{d[21,3]} & \Sexpr{d[21,4]} & \Sexpr{d[21,5]} \\ 
+ \Sexpr{d[1,1]} & \Sexpr{d[1,2]}& \Sexpr{d[1,3]}&\Sexpr{d[1,4]} & \Sexpr{d[1,5]}& \Sexpr{d[1,6]}\\ 
+ \Sexpr{d[2,1]}  & \Sexpr{d[2,2]} & \Sexpr{d[2,3]} & \Sexpr{d[2,4]} & \Sexpr{d[2,5]}& \Sexpr{d[2,6]}\\ 
+ \Sexpr{d[3,1]}  & \Sexpr{d[3,2]} & \Sexpr{d[3,3]} & \Sexpr{d[3,4]}& \Sexpr{d[3,5]} & \Sexpr{d[3,6]}\\ 
+ \Sexpr{d[4,1]}  & \Sexpr{d[4,2]} & \Sexpr{d[4,3]} & \Sexpr{d[4,4]} & \Sexpr{d[4,5]}& \Sexpr{d[4,6]}\\ 
+  \Sexpr{d[5,1]}  & \Sexpr{d[5,2]} & \Sexpr{d[5,3]} & \Sexpr{d[5,4]} & \Sexpr{d[5,5]}& \Sexpr{d[5,6]}\\ 
+  \Sexpr{d[6,1]}  & \Sexpr{d[6,2]} & \Sexpr{d[6,3]} & \Sexpr{d[6,4]}& \Sexpr{d[6,5]}& \Sexpr{d[6,6]} \\ 
+  \Sexpr{d[7,1]}  & \Sexpr{d[7,2]} & \Sexpr{d[7,3]} & \Sexpr{d[7,4]} & \Sexpr{d[7,5]}& \Sexpr{d[7,6]} \\ 
+ \Sexpr{d[8,1]}  & \Sexpr{d[8,2]} & \Sexpr{d[8,3]} & \Sexpr{d[8,4]} & \Sexpr{d[8,5]}& \Sexpr{d[8,6]} \\ 
+  \Sexpr{d[9,1]} & \Sexpr{d[9,2]}& \Sexpr{d[9,3]}&\Sexpr{d[9,4]} & \Sexpr{d[9,5]}& \Sexpr{d[9,6]}\\ 
+ \Sexpr{d[10,1]}  & \Sexpr{d[10,2]} & \Sexpr{d[10,3]} & \Sexpr{d[10,4]} & \Sexpr{d[10,5]}& \Sexpr{d[10,6]}\\ 
+ \Sexpr{d[11,1]}  & \Sexpr{d[11,2]} & \Sexpr{d[11,3]} & \Sexpr{d[11,4]}& \Sexpr{d[11,5]} & \Sexpr{d[11,6]}\\ 
+\Sexpr{d[12,1]}  & \Sexpr{d[12,2]} & \Sexpr{d[12,3]} & \Sexpr{d[12,4]} & \Sexpr{d[12,5]}& \Sexpr{d[12,6]}\\ 
+  \Sexpr{d[13,1]}  & \Sexpr{d[13,2]} & \Sexpr{d[13,3]} & \Sexpr{d[13,4]} & \Sexpr{d[13,5]}& \Sexpr{d[13,6]}\\ 
+ \Sexpr{d[14,1]}  & \Sexpr{d[14,2]} & \Sexpr{d[14,3]} & \Sexpr{d[14,4]}& \Sexpr{d[14,5]} & \Sexpr{d[14,6]}\\ 
+  \Sexpr{d[15,1]}  & \Sexpr{d[15,2]} & \Sexpr{d[15,3]} & \Sexpr{d[15,4]} & \Sexpr{d[15,5]}& \Sexpr{d[15,6]} \\ 
+  \Sexpr{d[16,1]}  & \Sexpr{d[16,2]} & \Sexpr{d[16,3]} & \Sexpr{d[16,4]} & \Sexpr{d[16,5]}& \Sexpr{d[16,6]} \\ 
+ \Sexpr{d[17,1]}  & \Sexpr{d[17,2]} & \Sexpr{d[17,3]} & \Sexpr{d[17,4]} & \Sexpr{d[17,5]}& \Sexpr{d[17,6]}\\ 
+  \Sexpr{d[18,1]}  & \Sexpr{d[18,2]} & \Sexpr{d[18,3]} & \Sexpr{d[18,4]}& \Sexpr{d[18,5]} & \Sexpr{d[18,6]}\\ 
+  \Sexpr{d[19,1]}  & \Sexpr{d[19,2]} & \Sexpr{d[19,3]} & \Sexpr{d[19,4]} & \Sexpr{d[19,5]} & \Sexpr{d[19,6]}\\ 
+  \Sexpr{d[20,1]}  & \Sexpr{d[20,2]} & \Sexpr{d[20,3]} & \Sexpr{d[20,4]} & \Sexpr{d[20,5]} & \Sexpr{d[20,6]}\\ 
+  \Sexpr{d[21,1]}  & \Sexpr{d[21,2]} & \Sexpr{d[21,3]} & \Sexpr{d[21,4]} & \Sexpr{d[21,5]}& \Sexpr{d[21,6]} \\ 
 
 \hline
 \end{tabular}
@@ -656,14 +713,15 @@ Woody Wetlands &  \Sexpr{d[21,1]}  & \Sexpr{d[21,2]} & \Sexpr{d[21,3]} & \Sexpr{
 
 \section{Conclusions/ Future work}
 
-The following conclusions hold only for the region we have described in the previous section. Whether they still hold for the real CEAP data needs future investigation. \\
+In the previous section we described an approach of constructing a larger sample of points surrounding the Des Moiner River in order to increase the chance of overlapping with the CDL sample of points and increase the number of crop classes observed in each year. There are other ways of constructing this sample, in the idea of 'mimicking' the CEAP sample. One could consider sampling points from the Census Iowa sample of points, close to the points in the Des Moines River sample by introducing a distance matrix, per say. Another approach could be to use a sample of the CDL points close to the points in the Des Moines River sample. We did not investigate any of these possibilities any further because the next step in our work would be in utilizing the real CEAP sample of points, that is available in CSSM, but not publicly available to be used for this project.\\
 
-Notice that 8 out of the 21 total crop classes are missing for all the years, for this particular region. Also, some of the crop classes are present only in some years, for example \textit{Christmas trees} are not recorded, for this region, in 2003 and in 2007. \\
+Hence, the following conclusions hold only for the region we have described in the previous section. Whether they still hold for the real CEAP data needs future investigation. \\
 
-There seem to be missing records in 2004 and 2006 due to clouds and to undefined records. These proportions are significantly larger than most of the crop classes proportions. However, the records from 2003, 2005 and 2007 seem to have better records of crop classes, not being affected of missing data.\\
+Notice that 8 out of the 21 total crop classes are missing for all the years, for this particular region. Also, some of the crop classes are present only in some years, for example \textit{Christmas trees} are not recorded, for this region, in 2003, 2006 and in 2007. \\
 
-We notice significant changes in some important crops over the years, for example corn and soybeans. The corn proportion of land is low in 2004 and 2005, while the soybean proportion of land is low in all but 2003, even missing in 2007. This trend would affect the analysis because the frame was designed in 2003 and we see greater changes in the follwoing years, when the data was collected. Some points seem to have changes classes.\\
+There are missing records in 2004 and 2005 due to clouds and to undefined records. These proportions are not significantly larger than most of the crop proportions. The records from 2003, 2006 and 2007 seem to have better records of crop classes, not being affected of missing data.\\
 
+The proportions of crops, for each class, change over the years. For example, there are lower observed proportions of Corn in 2003 and 2005, then the observed proportions of Corn in 2004, 2006 and 2007. Also, there are higher proportions of Grass/Pasture, Fallow/Idle Cropland and Soybean in 2003, then in the following years. On the other hand, the proportions of Forest and Water increase from 2003 to the following years. Since the CEAP survey frame was constructed in 2003 and the data was collected in the following four years, these changes may lead to frame coverage problems that need to be investigated. \\
 
 We have successfully worked with big data in different formats (.tif, web, coordinates in different measurement system, text and general expressions use) and developed tools to manipulate and extract useful information out of it. The next step is to utilize the tools constructed in this project to analyze changes in the real CEAP data. We would also like to investigate the CDL data as possible source of covariates in CEAP small area models. Another possible extension of this work with be the implementation of a web application, such as shiny. This would allow the users to better interact with CEAP data from yearly surveys, from different regions across United States.
 
