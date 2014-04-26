@@ -68,6 +68,7 @@ library(XML)
 \author{Andreea L. Erciulescu%
 %\thanks{I thank Richard E. Goldberg for providing this demo.%}
 }
+\date{April 30, 2014}
 
 \makebeamertitle
 \lyxframeend{}\section{NRI - CEAP}
@@ -76,9 +77,9 @@ library(XML)
 \lyxframeend{}\lyxframe{National Resources Inventory (NRI)}
 
 \begin{itemize}
-\item annual survey conducted collaboratively by USDA NRCS (Natural
+\item Annual survey conducted collaboratively by USDA NRCS (Natural
 Resources Conservation Services) and ISU Center for Survey Statistics and Methodology (CSSM)
-\item to
+\item To
 provide status and trend estimates for natural resources on nonfederal lands in US
   \begin{itemize}
   \item Example of such estimates are soil erosion estimates in relation to land characteristics and programs.
@@ -91,25 +92,26 @@ provide status and trend estimates for natural resources on nonfederal lands in 
 \lyxframeend{}\lyxframe{Conservation Effects Assessment Project (CEAP)}
 
 \begin{itemize}
-\item series of surveys intended to quantify environmental
+\item Series of surveys intended to quantify environmental
 effects of conservation prctices and programs by hydrologic unit codes (HUCs)
 \item CEAP sample is a subset of the NRI points classified as cultivated cropland
-    \begin {itemize}
-    \item Farmer interviews about on-farm practices  
-    \item Hydrologic, climate and soil databases
-		\item APEX model
-    \end{itemize}
+%     \begin {itemize}
+%     \item Farmer interviews about on-farm practices  
+%     \item Hydrologic, climate and soil databases
+% 		\item APEX model
+%     \end{itemize}
 \end{itemize}
 \lyxframeend{}
 
 %--------------------------------------------------------------------------------------------------
 
 \lyxframeend{}\lyxframe{United States territory divion into HUCs}
-Local concerns regarding the existance of nitrates in drinking water, particularly in Des Moines
 
 \begin{center}
 \includegraphics[width=10cm, height=5cm]{images/HUC2-4-8.jpg} 
 \end{center}
+Local concerns regarding the existance of nitrates in drinking water, particularly in Des Moines
+
 \lyxframeend{}\section{Data}
 
 %--------------------------------------------------------------------------------------------------
@@ -117,11 +119,11 @@ Local concerns regarding the existance of nitrates in drinking water, particular
 
 \includegraphics[width=3cm, height=2cm]{images/CDL.jpg} 
 \includegraphics[width=3cm, height=2.5cm]{images/CDLcodes.jpg}
-\includegraphics[width=3cm, height=2.5cm]{images/census.jpg}
+\includegraphics[width=4cm, height=2.5cm]{images/census.jpg}
 
 \\
 
-\includegraphics[width=3cm, height=2.5cm]{images/PLSS.jpg}
+\includegraphics[width=4cm, height=2.5cm]{images/PLSS.jpg}
 \includegraphics[width=3cm, height=2.5cm]{images/gis.jpg}
 \includegraphics[width=3cm, height=2cm]{images/atlas.jpg}
 
@@ -138,9 +140,24 @@ Local concerns regarding the existance of nitrates in drinking water, particular
 \item Tagged Image File (.tif) Format
 \item pixel counts for different categories of cropland - codes
 
-\includegraphics[width=3cm, height=2cm]{images/sourcecodes.jpg}
+\includegraphics[width=6cm, height=4cm]{images/sourcecodes.jpg}
+
+\end{itemize}
+
+\lyxframeend{}
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{ Crop Data Layer (CDL)   \includegraphics[width=2cm, height=1.2cm]{images/CDL.jpg} }
+
+
+
+\begin{itemize}
 
 \item download Iowa and years 2003-2007, approx. 750,000 KB 
+
+\includegraphics[width=7cm, height=5cm]{images/cyfiles.jpg}
+
+
 \end{itemize}
 
 \lyxframeend{}
@@ -171,7 +188,7 @@ cdl.ia03
 
 \begin{itemize}
 
-\item smaller dimensions (except for PLSS)
+\item smaller dimensions, except for Public Land Survey System (PLSS) 
 \item polygons information, shapefiles
 \item different territory coverages, not applicable for our problem
 
@@ -293,38 +310,19 @@ d = nrow(add.poly.coords)
 @
 
 
-\lyxframeend{}
-
-
-
-%--------------------------------------------------------------------------------------------------
-
-\lyxframeend{}\lyxframe{Extract CDL data for the region}
-
-\begin{itemize}
-
-\item \textit{cellFromXY} function to extract the pixel count information from CDL
-\item 224 points, crop codes 
-\item web scrape code/class data from NASS website
-\item merge codes and classes
-\end{itemize}
-
 \lyxframeend{}\section{Crop codes/classes}
 
+
+
 %--------------------------------------------------------------------------------------------------
-
-\lyxframeend{}\lyxframe{The \textit{CODES} challenge}
-
+\begin{frame}[fragile]
+\frametitle{Extract CDL data for the region}
 \begin{itemize}
-\item unstructured source code
 
-\includegraphics[width=4cm, height=2.5cm]{images/sourcecodes.jpg}
-\includegraphics[width=4cm, height=2.5cm]{images/sourcecode.jpg}
+\item \textit{cellFromXY} function to extract the pixel count information from CDL, overlapping the region of interest
+%\item 224 points, crop codes 
 
-\item list of unequal length elements
-
-<<CRSdata,warning=FALSE, message=FALSE,echo=FALSE>>=
-
+<<extract,warning=FALSE, message=FALSE>>=
 # get the coordinates in CRS
 loc.newcoords <- project(cbind(add.poly.coords[,2],add.poly.coords[,1]), proj = "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs")
 
@@ -334,7 +332,28 @@ cdl.pts4 <- cdl.ia04[cellFromXY(cdl.ia04, loc.newcoords)]
 cdl.pts5 <- cdl.ia05[cellFromXY(cdl.ia05, loc.newcoords)]
 cdl.pts6 <- cdl.ia06[cellFromXY(cdl.ia06, loc.newcoords)]
 cdl.pts7 <- cdl.ia07[cellFromXY(cdl.ia07, loc.newcoords)]
+table(cdl.pts3)/length(cdl.pts3[-which(is.na(cdl.pts3))])*100
+@
 
+\item web scrape code/class data from NASS website
+\item merge codes and classes
+\end{itemize}
+
+\end{frame}
+
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{The \textit{CODES} challenge}
+
+\begin{itemize}
+\item unstructured source code
+
+%\includegraphics[width=4cm, height=2.5cm]{images/sourcecodes.jpg}
+\includegraphics[width=5cm, height=3cm]{images/sourcecode.jpg}
+
+\item list of unequal length elements
+
+<<CRSdata,warning=FALSE, message=FALSE,echo=FALSE,cache=TRUE>>=
 src ="http://www.nass.usda.gov/research/Cropland/docs/CDL_2013_crosswalk.htm"
 tables <- readHTMLTable(src)
 codes <- tables[[1]]
@@ -378,6 +397,18 @@ Total  & 2003 & 2004 & 2005 & 2006 & 2007 \\
 \end{table}
 
 \item similar crop classes, \textit{Developed} and \textit{Developed/Low Intensity} or \textit{Developed/Open Space}
+\end{itemize}
+
+\lyxframeend{}
+%--------------------------------------------------------------------------------------------------
+
+\lyxframeend{}\lyxframe{The \textit{CODES} challenge defeated}
+
+\begin{itemize}
+\item matching the existent crop classes and adding the missing ones for each year
+\item using regular expressions: \textit{grep}, \textit{identical}
+\item debugging
+\item sorting by crop classes
 \end{itemize}
 
 \lyxframeend{}\section{Results}
@@ -484,18 +515,14 @@ Crop Class & 2003 & 2004 & 2005 & 2006 & 2007 \\
 \textit{The following conclusions hold only for the region we have described in the previous section. Whether they still hold for the real CEAP data needs future investigation. }
 
 \begin{itemize}
-\item big data
-\item coordinates in different measurement system
+\item different data types/sources
+\item large spatial, image data
+\item coordinates in different measurement systems
+\item regular expressions
 \item missing crop classes for all/some the years
-\item propotions of missing records in 2004 and 2005 due to clouds and to undefined records
-\item changes in some important crops over the years, for example corn and soybeans
-  \begin{itemize}
-
-  \item corn proportion of land is lower in 2003 and 2005
-  \item soybean proportion of land is higher in 2003
-  \item possible frame coverage problem
-  \end{itemize}
-
+\item missing records is some years
+\item changes in crops over the years
+\item possible frame coverage problem
 \end{itemize}
 
 
@@ -507,8 +534,8 @@ Crop Class & 2003 & 2004 & 2005 & 2006 & 2007 \\
 
 \begin{itemize}
 \item analyze changes in the real CEAP data
-\item investigate CDL data as source of covariates in CEAP small area models
-\item shiny app
+\item investigate CDL data as source of covariates
+\item shiny application
 \end{itemize}
 
 
