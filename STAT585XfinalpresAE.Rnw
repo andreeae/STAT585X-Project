@@ -71,8 +71,19 @@ library(XML)
 \date{April 30, 2014}
 
 \makebeamertitle
-\lyxframeend{}\section{NRI - CEAP}
+%--------------------------------------------------------------------------------------------------
+\lyxframeend{}\lyxframe{Why cropland / Why Iowa ?}
 
+\includegraphics[width=3cm, height=3cm]{images/SV.jpg} 
+\pause
+\includegraphics[width=3cm, height=3cm]{images/RT.jpg}
+\pause
+\includegraphics[width=4cm, height=3cm]{images/CC.jpg}
+
+\url{http://www.cultivationcorridor.org/}
+
+\lyxframeend{}\section{NRI - CEAP}
+%--------------------------------------------------------------------------------------------------
 
 \lyxframeend{}\lyxframe{National Resources Inventory (NRI)}
 
@@ -118,13 +129,17 @@ Local concerns regarding the existance of nitrates in drinking water, particular
 \lyxframeend{}\lyxframe{Publicly available data}
 
 \includegraphics[width=3cm, height=2cm]{images/CDL.jpg} 
+\pause
 \includegraphics[width=3cm, height=2.5cm]{images/CDLcodes.jpg}
+\pause
 \includegraphics[width=4cm, height=2.5cm]{images/census.jpg}
-
+\pause
 \\
 
 \includegraphics[width=4cm, height=2.5cm]{images/PLSS.jpg}
+\pause
 \includegraphics[width=3cm, height=2.5cm]{images/gis.jpg}
+\pause
 \includegraphics[width=3cm, height=2cm]{images/atlas.jpg}
 
 \lyxframeend{}
