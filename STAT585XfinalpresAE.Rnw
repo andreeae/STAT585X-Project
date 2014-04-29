@@ -111,6 +111,7 @@ effects of conservation prctices and programs by hydrologic unit codes (HUCs)
 %     \item Hydrologic, climate and soil databases
 % 		\item APEX model
 %     \end{itemize}
+\item study data: 2003-2007, frame designed in 2003
 \end{itemize}
 \lyxframeend{}
 
