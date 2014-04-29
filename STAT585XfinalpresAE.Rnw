@@ -194,7 +194,7 @@ cdl.ia03
 
 %--------------------------------------------------------------------------------------------------
 
-\lyxframeend{}\lyxframe{Census Tigerweb}
+\lyxframeend{}\lyxframe{Census Tigerweb   \includegraphics[weight=3.4cm, height=1.2cm]{images/census.jpg}}
 
 \begin{itemize}
 
@@ -327,7 +327,7 @@ table(cdl.pts3)/length(cdl.pts3[-which(is.na(cdl.pts3))])*100
 
 %--------------------------------------------------------------------------------------------------
 
-\lyxframeend{}\lyxframe{The \textit{CODES} challenge}
+\lyxframeend{}\lyxframe{The \textit{CODES} challenge     \includegraphics[weight=2.4 cm, height=1.2cm]{images/sourcecodes.jpg}}
 
 \begin{itemize}
 \item \textit{XML} library
