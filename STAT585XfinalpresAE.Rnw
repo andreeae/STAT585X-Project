@@ -17,6 +17,7 @@
  breaklinks=false,pdfborder={0 0 0},backref=false,colorlinks=false}
 \fi
 \usepackage{breakurl}
+\def\Put(#1,#2)#3{\leavevmode\makebox(0,0){\put(#1,#2){#3}}}
 
 \makeatletter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
@@ -72,109 +73,101 @@ library(XML)
 
 \makebeamertitle
 %--------------------------------------------------------------------------------------------------
-\lyxframeend{}\lyxframe{Why cropland / Why Iowa ?}
+% \lyxframeend{}\lyxframe{Why cropland / Why Iowa ?}
+% 
+% \includegraphics[width=3cm, height=3cm]{images/SV.jpg} 
+% \pause
+% \includegraphics[width=3cm, height=3cm]{images/RT.jpg}
+% \pause
+% \includegraphics[width=4cm, height=3cm]{images/CC.jpg}
+% 
+% \url{http://www.cultivationcorridor.org/}
 
-\includegraphics[width=3cm, height=3cm]{images/SV.jpg} 
-\pause
-\includegraphics[width=3cm, height=3cm]{images/RT.jpg}
-\pause
-\includegraphics[width=4cm, height=3cm]{images/CC.jpg}
-
-\url{http://www.cultivationcorridor.org/}
-
-\lyxframeend{}\section{NRI - CEAP}
+\lyxframeend{}\section{CEAP}
 %--------------------------------------------------------------------------------------------------
-
-\lyxframeend{}\lyxframe{National Resources Inventory (NRI)}
-
-\begin{itemize}
-\item Annual survey conducted collaboratively by USDA NRCS (Natural
-Resources Conservation Services) and ISU Center for Survey Statistics and Methodology (CSSM)
-\item To
-provide status and trend estimates for natural resources on nonfederal lands in US
-  \begin{itemize}
-  \item Example of such estimates are soil erosion estimates in relation to land characteristics and programs.
-  \end{itemize}
-\end{itemize}
-
-\lyxframeend{}
+% 
+% \lyxframeend{}\lyxframe{National Resources Inventory (NRI)}
+% 
+% \begin{itemize}
+% \item Annual survey conducted collaboratively by USDA NRCS (Natural
+% Resources Conservation Services) and ISU Center for Survey Statistics and Methodology (CSSM)
+% \item To
+% provide status and trend estimates for natural resources on nonfederal lands in US
+% %   \begin{itemize}
+% %   \item Example of such estimates are soil erosion estimates in relation to land characteristics and programs.
+% %   \end{itemize}
+% \end{itemize}
+% 
+% \lyxframeend{}
 %---------------------------------------------------------------------------
 
 \lyxframeend{}\lyxframe{Conservation Effects Assessment Project (CEAP)}
 
 \begin{itemize}
 \item Series of surveys intended to quantify environmental
-effects of conservation prctices and programs by hydrologic unit codes (HUCs)
-\item CEAP sample is a subset of the NRI points classified as cultivated cropland
-%     \begin {itemize}
-%     \item Farmer interviews about on-farm practices  
-%     \item Hydrologic, climate and soil databases
-% 		\item APEX model
-%     \end{itemize}
-\item study data: 2003-2007, frame designed in 2003
+effects of conservation practices and programs by hydrologic unit codes (HUCs)
+
+\begin{center}
+\includegraphics[width=10cm, height=5cm]{images/HUC2-4-8.jpg} 
+\end{center}
+
+\item Local concerns regarding the existance of nitrates in drinking water, particularly in Des Moines
 \end{itemize}
 \lyxframeend{}
 
 %--------------------------------------------------------------------------------------------------
 
-\lyxframeend{}\lyxframe{United States territory divion into HUCs}
+\lyxframeend{}\lyxframe{CEAP study data and project goal}
 
-\begin{center}
-\includegraphics[width=10cm, height=5cm]{images/HUC2-4-8.jpg} 
-\end{center}
-Local concerns regarding the existance of nitrates in drinking water, particularly in Des Moines
+\begin{itemize}
+\item CEAP sample is a set of cultivated cropland points 
+\item Center for Survey Statistics and Methodology (CSSM) study data: 2003-2007
+\item Frame designed in 2003
+\end{itemize}
+
+\textbf{The question of interest:} Do changes in land characteristics over time match the CEAP survey design and data collection?
 
 \lyxframeend{}\section{Data}
 
 %--------------------------------------------------------------------------------------------------
 \lyxframeend{}\lyxframe{Publicly available data}
 
-\includegraphics[width=3cm, height=2cm]{images/CDL.jpg} 
-\pause
-\includegraphics[width=3cm, height=2.5cm]{images/CDLcodes.jpg}
-\pause
-\includegraphics[width=4cm, height=2.5cm]{images/census.jpg}
-\pause
-\\
-
-\includegraphics[width=4cm, height=2.5cm]{images/PLSS.jpg}
-\pause
-\includegraphics[width=3cm, height=2.5cm]{images/gis.jpg}
-\pause
-\includegraphics[width=3cm, height=2cm]{images/atlas.jpg}
+%Land characteristics
+\includegraphics[height=3cm]{images/CDL.jpg} \pause
+\Put(0,90){\includegraphics[height=3cm]{images/sourcecodes.jpg}}\pause
+%Region of interest
+\Put(-130,-20){\includegraphics[width = 10cm, height=3cm]{images/census.jpg}}
 
 \lyxframeend{}
 
 %--------------------------------------------------------------------------------------------------
 
 \lyxframeend{}\lyxframe{ Crop Data Layer (CDL)   \includegraphics[width=2cm, height=1.2cm]{images/CDL.jpg} }
-
-
 
 \begin{itemize}
 
 \item Tagged Image File (.tif) Format
 \item pixel counts for different categories of cropland - codes
 
-\includegraphics[width=6cm, height=4cm]{images/sourcecodes.jpg}
+%\includegraphics[width=6cm, height=4cm]{images/sourcecodes.jpg}
 
+\item download Iowa and years 2003-2007, approx. 750,000 KB 
 \end{itemize}
 
 \lyxframeend{}
 %--------------------------------------------------------------------------------------------------
 
-\lyxframeend{}\lyxframe{ Crop Data Layer (CDL)   \includegraphics[width=2cm, height=1.2cm]{images/CDL.jpg} }
+\lyxframeend{}\lyxframe{ Working off of U: drive wasn't a good idea...}
 
 
+%\begin{itemize}
 
-\begin{itemize}
-
-\item download Iowa and years 2003-2007, approx. 750,000 KB 
+%\item download Iowa and years 2003-2007, approx. 750,000 KB 
 
 \includegraphics[width=7cm, height=5cm]{images/cyfiles.jpg}
 
 
-\end{itemize}
+%\end{itemize}
 
 \lyxframeend{}
 
@@ -184,7 +177,7 @@ Local concerns regarding the existance of nitrates in drinking water, particular
 \frametitle{Processing CDL data}
 
 \begin{itemize}
-\item \textit{Raster} package in \textit{R}, S4 methods
+\item \textit{Raster} package, S4 methods
 \item coordinate reference system (CRS)
 \end{itemize}
 
@@ -198,28 +191,6 @@ cdl.ia03
 @
 
 \end{frame}
-%--------------------------------------------------------------------------------------------------
-
-\lyxframeend{}\lyxframe{ GIS, PLSS, AtlasHCB}
-
-\begin{itemize}
-
-\item smaller dimensions, except for Public Land Survey System (PLSS) 
-\item polygons information, shapefiles
-\item different territory coverages, not applicable for our problem
-
-  \begin{itemize}
-
-  \item GIS: full river basin, universal transverse mercador (UTM) format
-  \item PLSS: state and county level, no hydrologic level
-  \item AtlasHCB: historical records, county level
-  \end{itemize}
-  
-\item \textit{maptools} in \textit{R}
-
-\end{itemize}
-
-\lyxframeend{}
 
 %--------------------------------------------------------------------------------------------------
 
@@ -234,19 +205,16 @@ cdl.ia03
 \end{itemize}
 
 \lyxframeend{}
-
-%--------------------------------------------------------------------------------------------------
-
 %--------------------------------------------------------------------------------------------------
 
 \lyxframeend{}\lyxframe{Processing Census Tigerweb}
 
 \begin{itemize}
 
-\item \textit{XML} library in \textit{R}
+\item \textit{XML} library
 \item pull point coordinates for Iowa and for Des Moines river
   
-\end{itemize}\section{CEAP sample}
+\end{itemize}\section{Des Moines River Watershed}
 
 
 <<census,cache=TRUE,warning=FALSE, message=FALSE, echo=FALSE,fig.width=5,fig.height=4>>=
@@ -302,7 +270,7 @@ qmap(location = 'iowa', zoom=7, maptype = 'hybrid') +
 
 \begin{itemize}
 
-\item add noise to each point using \textit{jitter} to mimic CEAP sample
+\item add noise to each point using \textit{jitter} to mimic CEAP region
 \item \textit{plyr} package
   
 \end{itemize}
@@ -362,6 +330,7 @@ table(cdl.pts3)/length(cdl.pts3[-which(is.na(cdl.pts3))])*100
 \lyxframeend{}\lyxframe{The \textit{CODES} challenge}
 
 \begin{itemize}
+\item \textit{XML} library
 \item unstructured source code
 
 %\includegraphics[width=4cm, height=2.5cm]{images/sourcecodes.jpg}
@@ -528,20 +497,27 @@ Crop Class & 2003 & 2004 & 2005 & 2006 & 2007 \\
 
 \lyxframeend{}\lyxframe{Conclusions}
 
-\textit{The following conclusions hold only for the region we have described in the previous section. Whether they still hold for the real CEAP data needs future investigation. }
 
 \begin{itemize}
-\item different data types/sources
-\item large spatial, image data
-\item coordinates in different measurement systems
-\item regular expressions
-\item missing crop classes for all/some the years
-\item missing records is some years
-\item changes in crops over the years
-\item possible frame coverage problem
+\item {Data processing}
+  \begin{itemize}
+  \item different data types/sources
+  \item large spatial, image data
+  \item coordinates in different measurement systems
+  \item regular expressions
+  \end{itemize}
+  
+\textit{The following conclusions hold only for the region we have described in the previous section. Whether they still hold for the real CEAP data needs future investigation. }
+  
+\item {Results}
+  \begin{itemize}
+  \item missing crop classes for all/some the years
+  \item missing records is some years
+  \item changes in crops over the years
+  \item possible frame coverage problem
 \end{itemize}
 
-
+\end{itemize}
 \lyxframeend{}
 
 %--------------------------------------------------------------------------------------------------
@@ -561,7 +537,9 @@ Crop Class & 2003 & 2004 & 2005 & 2006 & 2007 \\
 
 \lyxframeend{}\lyxframe{The end...}
 
-Thank you for your attention!
+Thank you for your attention! \\ 
+\\
+Questions?
 
 \lyxframeend{}
 
